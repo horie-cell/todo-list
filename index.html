@@ -1,0 +1,3764 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Todo Calendar Board</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --line2: #cbd5e1;
+      --dark: #0f172a;
+      --soft: #f1f5f9;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --danger-line: #fecaca;
+      --today-soft: #eef2ff;
+      --today-line: #c7d2fe;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      padding: 13px;
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      border-radius: 22px;
+      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.07);
+      margin-bottom: 12px;
+      width: 100%;
+      position: sticky;
+      top: 8px;
+      z-index: 20;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 10px;
+    }
+
+    .gear-wrap {
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .gear-button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: white;
+      color: var(--text);
+      font-size: 19px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 1px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .gear-menu {
+      position: absolute;
+      right: 0;
+      top: 46px;
+      display: none;
+      width: 190px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 8px;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.18);
+      z-index: 45;
+    }
+
+    .gear-menu.show {
+      display: block;
+    }
+
+    .gear-item {
+      width: 100%;
+      border: 0;
+      background: white;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 11px;
+      text-align: left;
+      font-weight: 800;
+      display: block;
+    }
+
+    .gear-item:hover {
+      background: var(--soft);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 0 0 2px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 23px;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      padding: 9px 8px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 12px;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .tab.active {
+      background: var(--dark);
+      color: white;
+      border-color: var(--dark);
+    }
+
+    .main-view {
+      display: none;
+      min-width: 0;
+    }
+
+    .main-view.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      box-shadow: 0 1px 6px rgba(15, 23, 42, 0.06);
+      padding: 14px;
+      min-width: 0;
+      max-width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .view-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      margin-bottom: 14px;
+      min-width: 0;
+    }
+
+    .desc {
+      color: var(--muted);
+      margin: 2px 0 0;
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .primary, .secondary {
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .primary {
+      border: 0;
+      background: var(--dark);
+      color: white;
+    }
+
+    .primary:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      border: 1px solid var(--line2);
+      background: white;
+      color: var(--text);
+    }
+
+    .form-card {
+      max-width: 520px;
+      margin: 0 auto 12px;
+    }
+
+    .section-title {
+      display: block;
+      margin-bottom: 14px;
+    }
+
+    .mark {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: var(--dark);
+      color: white;
+      font-weight: 800;
+      font-size: 14px;
+      flex: 0 0 auto;
+    }
+
+    .form {
+      display: grid;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .hidden-field {
+      display: none !important;
+    }
+
+    label {
+      display: grid;
+      gap: 4px;
+      font-size: 14px;
+      color: var(--muted);
+      min-width: 0;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--line2);
+      border-radius: 12px;
+      padding: 9px 10px;
+      background: white;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 72px;
+      resize: vertical;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .row input {
+      flex: 1 1 auto;
+    }
+
+    .category-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .category-box {
+      background: var(--soft);
+      padding: 11px;
+      border-radius: 15px;
+      min-width: 0;
+    }
+
+    .category-box p {
+      margin: 0 0 8px;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip, .badge {
+      display: inline-block;
+      background: white;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    .badge {
+      background: var(--soft);
+      color: #475569;
+    }
+
+    .badge.overdue {
+      color: var(--danger);
+      background: var(--danger-soft);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      overflow-y: hidden;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      -webkit-overflow-scrolling: touch;
+      max-width: 100%;
+    }
+
+    table {
+      min-width: 820px;
+      width: 820px;
+      table-layout: fixed;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th {
+      background: var(--soft);
+      text-align: left;
+      padding: 7px 6px;
+      white-space: nowrap;
+    }
+
+    td {
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+      padding: 6px;
+      vertical-align: top;
+      height: 78px;
+    }
+
+    th:first-child, td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      border-left: 0;
+      width: 100px;
+      min-width: 100px;
+      max-width: 100px;
+    }
+
+    th:first-child {
+      background: var(--soft);
+    }
+
+    td:first-child {
+      background: white;
+      font-weight: 800;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      font-size: 12px;
+    }
+
+    .parent-name {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    .date-head {
+      text-align: center;
+    }
+
+    .date-head.today {
+      background: var(--today-soft);
+      color: #3730a3;
+    }
+
+    .mini-todo {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 4px;
+      background: white;
+      margin-bottom: 4px;
+      max-width: 100%;
+    }
+
+    .mini-todo.done {
+      background: #f8fafc;
+      color: #94a3b8;
+    }
+
+    .mini-todo.overdue {
+      border-color: var(--danger-line);
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .mini-row {
+      display: flex;
+      align-items: start;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .mini-title {
+      font-size: 11px;
+      font-weight: 800;
+      margin: 0;
+      word-break: normal;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.25;
+    }
+
+    .mini-title.done {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+
+    .mini-meta {
+      font-size: 10px;
+      color: var(--muted);
+      margin: 2px 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+    }
+
+    .mini-todo.overdue .mini-meta {
+      color: var(--danger);
+    }
+
+    .small-btn {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      padding: 0 2px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+
+    input[type="checkbox"][data-action="toggle"] {
+      width: 15px;
+      height: 15px;
+      min-width: 15px;
+      margin-top: 3px;
+      accent-color: var(--dark);
+      cursor: pointer;
+    }
+
+    .todo-left input[type="checkbox"][data-action="toggle"] {
+      flex: 0 0 auto;
+    }
+
+    .todo-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: white;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .todo-card.overdue {
+      border-color: var(--danger-line);
+      background: #fff7f7;
+    }
+
+    .todo-left {
+      display: flex;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .todo-main {
+      min-width: 0;
+    }
+
+    .todo-title {
+      margin: 0;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .todo-title.done {
+      color: #94a3b8;
+      text-decoration: line-through;
+    }
+
+    .todo-title.overdue {
+      color: var(--danger);
+    }
+
+    .todo-detail {
+      margin: 4px 0 10px;
+      color: #475569;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .todo-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .delete {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 6px;
+      border-radius: 8px;
+      align-self: start;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .delete:hover {
+      color: var(--danger);
+      background: var(--danger-soft);
+    }
+
+    .empty {
+      border: 1px dashed var(--line2);
+      border-radius: 16px;
+      background: white;
+      padding: 28px 16px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .selected {
+      background: var(--soft);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .selected p {
+      margin: 0;
+    }
+
+    .selected .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .selected .large {
+      font-size: 18px;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .warn {
+      background: #fff7ed;
+      color: #9a3412;
+      border: 1px solid #fed7aa;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .warn.show {
+      display: block;
+    }
+
+    .month-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .month-title {
+      font-weight: 800;
+      min-width: 110px;
+      text-align: center;
+    }
+
+    .month-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 0;
+      width: 100%;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: white;
+      overflow: hidden;
+    }
+
+    .weekday {
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 5px 0;
+      border-left: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: var(--soft);
+    }
+
+    .weekday:nth-child(7n + 1) {
+      border-left: 0;
+    }
+
+    .month-cell {
+      border: 0;
+      border-left: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+      background: white;
+      border-radius: 0;
+      padding: 5px 4px;
+      min-height: 108px;
+      min-width: 0;
+    }
+
+    .month-cell:nth-child(7n + 1) {
+      border-left: 0;
+    }
+
+    .month-cell.outside {
+      background: #f8fafc;
+      color: #94a3b8;
+    }
+
+    .month-cell.today {
+      background: var(--today-soft);
+      box-shadow: inset 0 0 0 2px var(--today-line);
+    }
+
+    .month-day {
+      font-weight: 800;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .month-mini {
+      border-radius: 6px;
+      background: var(--soft);
+      padding: 3px 4px;
+      font-size: 10px;
+      margin-bottom: 3px;
+      word-break: normal;
+    }
+
+    .month-mini.overdue {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border: 1px solid var(--danger-line);
+    }
+
+    .month-more {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+
+    details.settings-box {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: white;
+      padding: 10px 12px;
+      margin-top: 10px;
+    }
+
+    details.settings-box > summary {
+      cursor: pointer;
+      font-weight: 800;
+      list-style-position: inside;
+    }
+
+    .settings-body {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .color-row, .label-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 56px;
+      gap: 8px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 0;
+    }
+
+    .label-row {
+      grid-template-columns: 88px minmax(0, 1fr);
+    }
+
+    .color-row:last-child, .label-row:last-child {
+      border-bottom: 0;
+    }
+
+    .color-label, .label-name {
+      font-weight: 800;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    input[type="color"] {
+      height: 38px;
+      padding: 3px;
+    }
+
+    .color-preview {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-right: 6px;
+      vertical-align: -2px;
+      border: 1px solid rgba(15, 23, 42, 0.18);
+    }
+
+    .importance-badge {
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #0f172a;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+    }
+
+    .certainty-badge {
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      background: white;
+      color: #475569;
+      border: 1px solid #94a3b8;
+    }
+
+    .kind-badge {
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #ecfeff;
+      color: #155e75;
+      border: 1px solid #a5f3fc;
+    }
+
+
+    .visual-timeline {
+      display: grid;
+      grid-template-columns: 62px minmax(0, 1fr);
+      position: relative;
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: white;
+    }
+
+    .timeline-labels {
+      position: relative;
+      height: var(--timeline-height);
+      border-right: 1px solid var(--line);
+      background: white;
+    }
+
+    .timeline-area {
+      position: relative;
+      height: var(--timeline-height);
+      background: linear-gradient(to bottom, transparent calc(100% - 1px), var(--line) 100%);
+      overflow: hidden;
+    }
+
+    .timeline-hour-label {
+      position: absolute;
+      right: 10px;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .timeline-hour-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .timeline-event-block {
+      position: absolute;
+      left: 10px;
+      right: 8px;
+      border-radius: 14px;
+      padding: 8px 10px;
+      overflow: hidden;
+      cursor: pointer;
+      background: white;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+    }
+
+    .timeline-event-block.class-item {
+      background: #f8fbff;
+    }
+
+    .timeline-event-title {
+      font-weight: 900;
+      font-size: 13px;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .timeline-event-meta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 3px;
+    }
+
+
+    .category-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .category-head p {
+      margin: 0;
+    }
+
+    .category-delete {
+      border: 1px solid #fecaca;
+      background: #fff7f7;
+      color: #b91c1c;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    .chip-with-delete {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: white;
+      border-radius: 999px;
+      padding: 4px 7px 4px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    .chip-delete {
+      border: 0;
+      background: #fee2e2;
+      color: #b91c1c;
+      border-radius: 999px;
+      width: 18px;
+      height: 18px;
+      line-height: 1;
+      font-size: 12px;
+      font-weight: 900;
+      display: inline-grid;
+      place-items: center;
+      padding: 0;
+      flex: 0 0 auto;
+    }
+
+    @media (max-width: 720px) {
+      .visual-timeline {
+        grid-template-columns: 54px minmax(0, 1fr);
+      }
+
+      .timeline-hour-label {
+        right: 7px;
+        font-size: 12px;
+      }
+
+      .timeline-event-block {
+        left: 8px;
+        right: 6px;
+        padding: 7px 9px;
+      }
+
+      .timeline-event-title {
+        font-size: 12px;
+      }
+
+      .timeline-event-meta {
+        font-size: 11px;
+      }
+    }
+
+    .time-row {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr);
+      min-height: 44px;
+      border-top: 1px solid var(--line);
+    }
+
+    .time-label {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 8px 8px 0 0;
+      text-align: right;
+      border-right: 1px solid var(--line);
+    }
+
+    .time-slot {
+      padding: 5px 0 5px 8px;
+      min-width: 0;
+    }
+
+    .timeline-item {
+      border-radius: 10px;
+      border: 1px solid var(--line2);
+      background: white;
+      padding: 6px 8px;
+      margin-bottom: 5px;
+      font-size: 12px;
+      word-break: break-word;
+      cursor: pointer;
+    }
+
+    .timeline-title {
+      font-weight: 800;
+    }
+
+    .timeline-meta {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .all-day-box {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      border-radius: 14px;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+
+    .all-day-box h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+
+    .month-mini {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+
+    .month-mini-inner {
+      display: inline;
+      white-space: nowrap;
+    }
+
+    .task-clickable {
+      cursor: pointer;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(15, 23, 42, 0.45);
+      padding: 14px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.show {
+      display: grid;
+    }
+
+    .modal {
+      width: min(520px, 100%);
+      max-height: min(90vh, 760px);
+      overflow-y: auto;
+      background: white;
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 18px 60px rgba(15, 23, 42, 0.25);
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .modal-close {
+      border: 1px solid var(--line2);
+      background: white;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-weight: 800;
+    }
+
+
+    .fab-wrap {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 40;
+    }
+
+    .fab {
+      width: 58px;
+      height: 58px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--dark);
+      color: white;
+      font-size: 30px;
+      line-height: 1;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.28);
+      display: grid;
+      place-items: center;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .fab.open {
+      transform: rotate(45deg);
+      background: #334155;
+    }
+
+    .fab-menu {
+      position: absolute;
+      right: 0;
+      bottom: 70px;
+      display: none;
+      width: 180px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 8px;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.18);
+    }
+
+    .fab-menu.show {
+      display: block;
+    }
+
+    .fab-item {
+      width: 100%;
+      border: 0;
+      background: white;
+      color: var(--text);
+      border-radius: 13px;
+      padding: 10px 11px;
+      text-align: left;
+      font-weight: 800;
+      display: block;
+    }
+
+    .fab-item:hover {
+      background: var(--soft);
+    }
+
+
+
+    .ut-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .ut-pill {
+      border: 1px solid var(--line2);
+      background: white;
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-weight: 800;
+    }
+
+    .timetable-wrap {
+      overflow-x: hidden;
+      border-radius: 14px;
+      background: white;
+      border: 1px solid var(--line);
+      width: 100%;
+    }
+
+    .timetable-grid {
+      display: grid;
+      grid-template-columns: 44px repeat(5, minmax(0, 1fr));
+      width: 100%;
+      background: #ffffff;
+      gap: 0;
+    }
+
+    .tt-head,
+    .tt-time {
+      background: #ffd400;
+      color: #111827;
+      font-weight: 900;
+      display: grid;
+      place-items: center;
+      border-right: 2px solid white;
+      border-bottom: 2px solid white;
+      min-height: 42px;
+      text-align: center;
+    }
+
+    .tt-time {
+      font-size: 11px;
+      line-height: 1.2;
+      padding: 4px 2px;
+      min-height: 104px;
+    }
+
+    .tt-cell {
+      background: #eef6ff;
+      border-right: 2px solid white;
+      border-bottom: 2px solid white;
+      min-height: 104px;
+      padding: 3px;
+      position: relative;
+    }
+
+    .tt-card {
+      height: 100%;
+      border-radius: 8px;
+      padding: 6px 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: center;
+      background: #bfdbfe;
+      color: #111827;
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.45);
+      min-width: 0;
+    }
+
+    .tt-card.empty {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .tt-title {
+      font-weight: 900;
+      font-size: 12px;
+      line-height: 1.25;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .tt-room {
+      display: inline-block;
+      align-self: center;
+      max-width: 100%;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 5px;
+      padding: 2px 4px;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.2;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .tt-detail-panel {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(15, 23, 42, 0.34);
+      padding: 14px;
+      z-index: 60;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    .tt-detail-panel.show {
+      display: grid;
+      opacity: 1;
+    }
+
+    .tt-editor-card {
+      width: min(520px, 100%);
+      max-height: min(90vh, 760px);
+      overflow-y: auto;
+      background: white;
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 22px 70px rgba(15, 23, 42, 0.24);
+      transform: translateY(10px) scale(0.98);
+      animation: floatIn 0.18s ease forwards;
+    }
+
+    @keyframes floatIn {
+      to {
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .tt-editor-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .tt-editor-close {
+      border: 1px solid var(--line2);
+      background: white;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-weight: 800;
+    }
+
+    .class-color-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 54px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .timeline-item.class-item {
+      background: #f8fbff;
+    }
+
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      gap: 8px;
+    }
+
+    .preset-button {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 14px;
+      padding: 8px;
+      text-align: center;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .preset-button.selected {
+      outline: 3px solid rgba(15, 23, 42, 0.18);
+    }
+
+    .preset-swatch {
+      display: block;
+      width: 100%;
+      height: 30px;
+      border-radius: 10px;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      margin-bottom: 6px;
+    }
+
+    .hidden-color-input {
+      position: fixed;
+      left: -9999px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+
+    .color-sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: rgba(15, 23, 42, 0.36);
+      padding: 18px;
+      z-index: 80;
+    }
+
+    .color-sheet-backdrop.show {
+      display: grid;
+    }
+
+    .color-sheet {
+      width: min(420px, 100%);
+      background: #fbfbff;
+      border-radius: 28px;
+      padding: 22px;
+      box-shadow: 0 22px 70px rgba(15, 23, 42, 0.28);
+      animation: floatIn 0.16s ease forwards;
+    }
+
+    .color-sheet h2 {
+      font-size: 24px;
+      margin-bottom: 14px;
+    }
+
+    .color-sample-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      margin: 14px 0 22px;
+    }
+
+    .color-sample {
+      width: 76px;
+      height: 76px;
+      border-radius: 14px;
+      border: 3px solid white;
+      outline: 1px solid #94a3b8;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.18);
+    }
+
+    .color-sheet-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 720px) {
+      .timetable-grid {
+        grid-template-columns: 38px repeat(5, minmax(0, 1fr));
+        width: 100%;
+      }
+
+      .tt-head {
+        min-height: 38px;
+        font-size: 12px;
+      }
+
+      .tt-time {
+        min-height: 92px;
+        font-size: 10px;
+      }
+
+      .tt-cell {
+        min-height: 92px;
+        padding: 2px;
+      }
+
+      .tt-card {
+        border-radius: 7px;
+        padding: 5px 3px;
+      }
+
+      .tt-title {
+        font-size: 11px;
+      }
+
+      .tt-room {
+        font-size: 9px;
+        padding: 2px 3px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        padding: 8px;
+      }
+
+      .header, .view-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      h1 {
+        font-size: 21px;
+      }
+
+      .tabs {
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      .card {
+        padding: 12px;
+      }
+
+      .form-card {
+        max-width: 100%;
+      }
+
+      .two {
+        grid-template-columns: 1fr;
+      }
+
+      .category-list {
+        grid-template-columns: 1fr;
+      }
+
+      .month-grid {
+        gap: 0;
+      }
+
+      .month-cell {
+        min-height: 82px;
+        padding: 4px 2px;
+        border-radius: 0;
+      }
+
+      .month-mini {
+        font-size: 9px;
+        padding: 2px 3px;
+      }
+
+      .month-day {
+        font-size: 11px;
+      }
+
+      table {
+        width: 756px;
+        min-width: 756px;
+        font-size: 11px;
+      }
+
+      th {
+        padding: 6px 4px;
+      }
+
+      td {
+        padding: 4px;
+      }
+
+      th:first-child, td:first-child {
+        width: 84px;
+        min-width: 84px;
+        max-width: 84px;
+        font-size: 10px;
+      }
+
+      .parent-name {
+        display: none;
+      }
+
+      .mini-title {
+        font-size: 10px;
+      }
+
+      .mini-meta {
+        font-size: 9px;
+      }
+
+      .importance-badge, .certainty-badge {
+        padding: 1px 4px;
+        font-size: 9px;
+      }
+
+      .small-btn {
+        font-size: 10px;
+      }
+    }
+  </style>
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-top">
+        <div>
+          <p class="subtitle">カテゴリと日程で管理するTodoアプリ</p>
+          <h1>Todo Calendar Board</h1>
+        </div>
+
+        <div class="gear-wrap">
+          <button id="gearButton" class="gear-button" aria-label="設定メニューを開く">⚙</button>
+          <div id="gearMenu" class="gear-menu" aria-hidden="true">
+            <button class="gear-item" data-gear-view="timetable">時間割</button>
+            <button class="gear-item" data-gear-view="manage">カテゴリ管理</button>
+            <button class="gear-item" data-gear-view="settings">表示設定</button>
+            <button class="gear-item" data-gear-view="data">データ管理</button>
+          </div>
+        </div>
+      </div>
+      <nav class="tabs" aria-label="表示切り替え">
+        <button class="tab active" data-view-button="matrix">週</button>
+        <button class="tab" data-view-button="month">月</button>
+        <button class="tab" data-view-button="day">日別</button>
+        <button class="tab" data-view-button="category">カテゴリ</button>
+        <button class="tab" data-view-button="completed">完了</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="matrixView" class="card main-view active">
+        <div class="view-head">
+          <div>
+            <h2>週カレンダー</h2>
+            <p class="desc">今日から7日分のTodoを横スクロールで表示します。スマホでは一度に約4日分が見える幅にしています。予定は日別・月カレンダーで確認します。</p>
+          </div>
+          <div class="actions">
+            <button class="secondary" id="openFabHint">右下＋で追加、右上⚙で管理</button>
+          </div>
+        </div>
+        <div id="matrixTable" class="table-wrap"></div>
+      </section>
+
+      <section id="monthView" class="card main-view">
+        <div class="view-head">
+          <div>
+            <h2>月カレンダー</h2>
+            <p class="desc">月単位でTodoを確認できます。</p>
+          </div>
+          <div class="month-controls">
+            <button id="prevMonth" class="secondary">前月</button>
+            <div id="monthTitle" class="month-title"></div>
+            <button id="nextMonth" class="secondary">翌月</button>
+            <button id="thisMonth" class="secondary">今月</button>
+          </div>
+        </div>
+        <div id="monthCalendar"></div>
+      </section>
+
+      <section id="dayView" class="card main-view">
+        <div class="view-head">
+          <div>
+            <h2>日別予定</h2>
+            <p class="desc">指定した日にあるTodoを一覧します。</p>
+          </div>
+          <label>
+            表示する日
+            <input id="selectedDate" type="date" />
+          </label>
+        </div>
+        <div id="dayTodos"></div>
+        <div id="dayTimeline" style="margin-top:12px;"></div>
+      </section>
+
+      <section id="categoryView" class="card main-view">
+        <div class="view-head">
+          <div>
+            <h2>カテゴリ別Todo</h2>
+            <p class="desc">カテゴリを選ぶと、Todoと日程を確認できます。</p>
+          </div>
+          <div class="two">
+            <label>
+              親カテゴリ
+              <select id="filterParent"></select>
+            </label>
+            <label>
+              子カテゴリ
+              <select id="filterChild"></select>
+            </label>
+          </div>
+        </div>
+
+        <div class="selected">
+          <p class="small">選択中のカテゴリ</p>
+          <p id="selectedCategoryLabel" class="large">未選択</p>
+        </div>
+
+        <div id="categoryTodos"></div>
+      </section>
+
+
+      <section id="completedView" class="card main-view">
+        <div class="view-head">
+          <div>
+            <h2>達成済みタスク</h2>
+            <p class="desc">完了チェックを入れたTodoを一覧します。チェックを外すと未完了に戻ります。</p>
+          </div>
+        </div>
+        <div id="completedTodos"></div>
+      </section>
+
+      <section id="addView" class="main-view">
+        <section class="card form-card">
+          <div class="section-title">
+            <h2 id="addViewTitle">Todoを追加</h2>
+          </div>
+
+          <div class="form">
+            <label>
+              追加する種類
+              <select id="todoKind">
+                <option value="todo">Todo</option>
+                <option value="event">予定</option>
+              </select>
+            </label>
+
+            <label id="todoChildField">
+              子カテゴリ
+              <select id="todoChild"></select>
+            </label>
+
+            <label>
+              題名
+              <input id="todoTitle" placeholder="例: レポートを書く" />
+            </label>
+
+            <label>
+              詳細
+              <textarea id="todoDetail" placeholder="内容、提出場所、注意点など"></textarea>
+            </label>
+
+            <div class="two">
+              <label id="todoDateField">
+                <span id="todoDateLabel">締切日</span>
+                <input id="todoDate" type="date" />
+              </label>
+
+              <label id="todoDeadlineTimeField">
+                締切時刻
+                <input id="todoDeadlineTime" type="time" />
+              </label>
+            </div>
+
+            <div class="two">
+              <label id="eventStartTimeField">
+                開始時刻
+                <input id="todoStartTime" type="time" />
+              </label>
+
+              <label id="eventEndTimeField">
+                終了時刻
+                <input id="todoEndTime" type="time" />
+              </label>
+            </div>
+
+            <label id="todoImportanceField">
+              重要度
+              <select id="todoImportance">
+                <option selected>高</option>
+                <option>中</option>
+                <option>低</option>
+              </select>
+            </label>
+
+            <div class="two">
+              <label id="todoCertaintyField">
+                確定度 予定用
+                <select id="todoCertainty"></select>
+              </label>
+
+              <label id="todoMinutesField">
+                かかりそうな時間 分
+                <input id="todoMinutes" type="number" min="0" value="30" />
+              </label>
+            </div>
+
+            <div id="todoWarn" class="warn">Todoは題名と子カテゴリ、予定は題名を入力してください。</div>
+            <button id="addTodo" class="primary">追加する</button>
+          </div>
+        </section>
+      </section>
+
+
+      <section id="timetableView" class="main-view">
+        <section class="card">
+          <div class="view-head">
+            <div>
+              <h2>東大時間割</h2>
+              <p class="desc">曜日と時限ごとに授業を入力できます。入力した授業は日別の24時間表示にも出ます。</p>
+            </div>
+            <div class="ut-toolbar">
+              <button id="clearSelectedClass" class="secondary">選択を解除</button>
+            </div>
+          </div>
+
+          <div class="timetable-wrap">
+            <div id="timetableGrid" class="timetable-grid"></div>
+          </div>
+
+          <div id="classEditorPanel" class="tt-detail-panel" aria-hidden="true">
+            <section class="tt-editor-card">
+              <div class="tt-editor-head">
+                <h2 id="classEditorTitle">授業を選択してください</h2>
+                <button id="closeClassEditor" class="tt-editor-close">閉じる</button>
+              </div>
+              <p class="desc">授業名・教室・色などを編集できます。</p>
+
+              <div class="form" style="margin-top:12px;">
+              <input id="classEditorId" type="hidden" />
+
+              <div class="two">
+                <label>
+                  曜日
+                  <select id="classDay">
+                    <option value="1">月</option>
+                    <option value="2">火</option>
+                    <option value="3">水</option>
+                    <option value="4">木</option>
+                    <option value="5">金</option>
+                  </select>
+                </label>
+
+                <label>
+                  時限
+                  <select id="classPeriod">
+                    <option value="1">1限</option>
+                    <option value="2">2限</option>
+                    <option value="3">3限</option>
+                    <option value="4">4限</option>
+                    <option value="5">5限</option>
+                    <option value="6">6限</option>
+                  </select>
+                </label>
+              </div>
+
+              <label>
+                科目名
+                <input id="classTitle" placeholder="例: 数理科学基礎" />
+              </label>
+
+              <label>
+                担当講師
+                <input id="classTeacher" placeholder="任意" />
+              </label>
+
+              <label>
+                講義場所・教室
+                <input id="classRoom" placeholder="例: 駒場5号館523教室" />
+              </label>
+
+              <div class="two">
+                <label>
+                  開始時刻
+                  <input id="classStartTime" type="time" />
+                </label>
+
+                <label>
+                  終了時刻
+                  <input id="classEndTime" type="time" />
+                </label>
+              </div>
+
+              <label>
+                コマの色
+                <div id="classColorPresetGrid" class="preset-grid"></div>
+              </label>
+
+              <div class="actions">
+                <button id="saveClass" class="primary">保存</button>
+                <button id="deleteClass" class="secondary">この授業を削除</button>
+              </div>
+            </div>
+            </section>
+          </div>
+        </section>
+      </section>
+
+      <section id="manageView" class="main-view">
+        <section class="card form-card">
+          <div class="section-title">
+            <h2>カテゴリ管理</h2>
+          </div>
+
+          <div class="form">
+            <div class="row">
+              <input id="newParentName" placeholder="親カテゴリを追加" />
+              <button id="addParent" class="secondary">追加</button>
+            </div>
+
+            <label>
+              子カテゴリを追加する親カテゴリ
+              <select id="categoryParent"></select>
+            </label>
+
+            <div class="row">
+              <input id="newChildName" placeholder="子カテゴリを追加" />
+              <button id="addChild" class="secondary">追加</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>カテゴリ一覧</h2>
+          <div id="categoryList" class="category-list"></div>
+        </section>
+
+      </section>
+
+      <section id="settingsView" class="main-view">
+        <section class="card form-card">
+          <div class="section-title">
+            <h2>表示設定</h2>
+          </div>
+          <p class="desc">重要度の枠線色や予定の確定度ラベルを変更できます。初期色は目に優しい低彩度カラーにしています。</p>
+
+          <details class="settings-box" open>
+            <summary>重要度ごとの枠線色</summary>
+            <div id="importanceColorSettings" class="settings-body"></div>
+          </details>
+
+          <details class="settings-box">
+            <summary>時間割の色候補</summary>
+            <p class="desc">時間割の授業編集画面、またはこの一覧で色を長押しすると候補色を変更できます。その候補を使っている授業にも反映されます。</p>
+            <div id="classColorPresetSettings" class="settings-body"></div>
+            <input id="hiddenPresetColorInput" class="hidden-color-input" type="color" />
+          </details>
+
+          <details class="settings-box">
+            <summary>予定の確定度ラベル</summary>
+            <div id="certaintyLabelSettings" class="settings-body"></div>
+          </details>
+
+          <div class="actions">
+            <button id="resetVisualSettings" class="secondary">表示設定を初期化</button>
+          </div>
+        </section>
+      </section>
+
+      <section id="dataView" class="main-view">
+        <section class="card form-card">
+          <div class="section-title">
+            <h2>データ管理</h2>
+          </div>
+          <p class="desc">入力したTodo・予定・時間割・カテゴリ・色設定をJSONファイルとして保存、復元できます。</p>
+
+          <details class="settings-box" open>
+            <summary>エクスポート</summary>
+            <div class="settings-body">
+              <p class="desc">現在のデータをファイルとして保存します。機種変更やバックアップ用です。</p>
+              <button id="exportData" class="primary">データを書き出す</button>
+            </div>
+          </details>
+
+          <details class="settings-box">
+            <summary>インポート</summary>
+            <div class="settings-body">
+              <p class="desc">以前に書き出したJSONファイルから復元します。現在のデータは上書きされます。</p>
+              <input id="importDataFile" type="file" accept="application/json,.json" />
+              <button id="importData" class="secondary">選択したファイルから復元</button>
+            </div>
+          </details>
+
+          <div id="dataStatus" class="warn" style="display:block; background:#f8fafc; color:#475569; border-color:#e2e8f0;">
+            バックアップファイルは自分で保管してください。
+          </div>
+        </section>
+      </section>
+
+    </main>
+  </div>
+
+
+
+  <div class="fab-wrap">
+    <div id="fabMenu" class="fab-menu" aria-hidden="true">
+      <button class="fab-item" data-fab-view="add" data-fab-kind="todo">Todoを追加</button>
+      <button class="fab-item" data-fab-view="add" data-fab-kind="event">予定を追加</button>
+    </div>
+    <button id="fabButton" class="fab" aria-label="追加メニューを開く">＋</button>
+  </div>
+
+
+  <div id="classColorSheet" class="color-sheet-backdrop" aria-hidden="true">
+    <section class="color-sheet" role="dialog" aria-modal="true" aria-labelledby="classColorSheetTitle">
+      <h2 id="classColorSheetTitle">色を変更</h2>
+      <p class="desc">この色候補を変更します。同じ色候補を使っている授業にも反映されます。</p>
+      <div class="color-sample-row">
+        <label>
+          カスタム色
+          <input id="classPresetColorPicker" type="color" />
+        </label>
+        <div id="classPresetColorSample" class="color-sample"></div>
+      </div>
+      <div class="color-sheet-actions">
+        <button id="cancelClassPresetColor" class="secondary">キャンセル</button>
+        <button id="saveClassPresetColor" class="primary">保存</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="editModal" class="modal-backdrop" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+      <div class="modal-head">
+        <h2 id="editTitle">Todoを編集</h2>
+        <button id="closeEditModal" class="modal-close">閉じる</button>
+      </div>
+
+      <div class="form">
+        <input id="editTodoId" type="hidden" />
+
+        <label>
+          種類
+          <select id="editKind">
+            <option value="todo">Todo</option>
+            <option value="event">予定</option>
+          </select>
+        </label>
+
+        <label>
+          親カテゴリ
+          <select id="editParent"></select>
+        </label>
+
+        <label>
+          子カテゴリ
+          <select id="editChild"></select>
+        </label>
+
+        <label>
+          題名
+          <input id="editTitleInput" />
+        </label>
+
+        <label>
+          詳細
+          <textarea id="editDetail"></textarea>
+        </label>
+
+        <div class="two">
+          <label id="editDateField">
+            <span id="editDateLabel">締切日</span>
+            <input id="editDate" type="date" />
+          </label>
+
+          <label id="editDeadlineTimeField">
+            締切時刻
+            <input id="editDeadlineTime" type="time" />
+          </label>
+        </div>
+
+        <div class="two">
+          <label id="editStartTimeField">
+            開始時刻
+            <input id="editStartTime" type="time" />
+          </label>
+
+          <label id="editEndTimeField">
+            終了時刻
+            <input id="editEndTime" type="time" />
+          </label>
+        </div>
+
+        <label id="editImportanceField">
+          重要度
+          <select id="editImportance">
+            <option>高</option>
+            <option>中</option>
+            <option>低</option>
+          </select>
+        </label>
+
+        <div class="two">
+          <label id="editCertaintyField">
+            確定度 予定用
+            <select id="editCertainty"></select>
+          </label>
+
+          <label>
+            かかりそうな時間 分
+            <input id="editMinutes" type="number" min="0" />
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="saveEditTodo" class="primary">保存</button>
+          <button id="deleteEditTodo" class="secondary">削除</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "todo-calendar-board-v31";
+    const OLD_KEYS = ["todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+
+    const initialState = {
+      parents: [
+        {
+          id: "circle",
+          name: "サークル",
+          children: [
+            { id: "kyudo", name: "弓道部" },
+            { id: "koto", name: "琴" }
+          ]
+        },
+        {
+          id: "class",
+          name: "授業",
+          children: [
+            { id: "math", name: "数学" },
+            { id: "info", name: "情報" },
+            { id: "english", name: "英語" }
+          ]
+        },
+        {
+          id: "life",
+          name: "生活",
+          children: [
+            { id: "admin", name: "手続き" },
+            { id: "shopping", name: "買い物" }
+          ]
+        }
+      ],
+      todos: [
+        {
+          id: makeId("todo"),
+          parentId: "class",
+          childId: "info",
+          kind: "todo",
+          title: "情報システム基礎の課題",
+          startTime: "",
+          endTime: "",
+          deadlineTime: "",
+          detail: "講義内容の要約と感想を書く",
+          date: todayString(),
+          importance: "高",
+          certaintyId: "confirmed",
+          minutes: 45,
+          done: false
+        },
+        {
+          id: makeId("todo"),
+          parentId: "circle",
+          childId: "kyudo",
+          kind: "todo",
+          title: "新歓LINEの確認",
+          startTime: "",
+          endTime: "",
+          deadlineTime: "",
+          detail: "持ち物と練習日程を確認する",
+          date: dateOffset(todayString(), 1),
+          importance: "中",
+          certaintyId: "uncertain",
+          minutes: 15,
+          done: false
+        }
+      ],
+      view: "matrix",
+      selectedDate: todayString(),
+      selectedParentId: "class",
+      selectedChildId: "info",
+      filterParentId: "class",
+      filterChildId: "info",
+      monthCursor: todayString(),
+      lastKnownToday: todayString(),
+      classes: [],
+      classColorPresets: [
+        { id: "blue", name: "青", color: "#bfdbfe" },
+        { id: "green", name: "緑", color: "#bbf7d0" },
+        { id: "yellow", name: "黄", color: "#fef3c7" },
+        { id: "pink", name: "桃", color: "#fbcfe8" },
+        { id: "purple", name: "紫", color: "#ddd6fe" },
+        { id: "gray", name: "灰", color: "#e5e7eb" }
+      ],
+      categoryColors: {
+        kyudo: "#bbf7d0",
+        koto: "#fbcfe8",
+        math: "#bfdbfe",
+        info: "#c7d2fe",
+        english: "#fde68a",
+        admin: "#e2e8f0",
+        shopping: "#fed7aa"
+      },
+      importanceColors: {
+        "低": "#e5e7eb",
+        "中": "#dbeafe",
+        "高": "#fef3c7",
+        "最高": "#fde2e2"
+      },
+      certaintyOptions: [
+        { id: "confirmed", label: "確定" },
+        { id: "likely", label: "可能性高" },
+        { id: "uncertain", label: "未確定" }
+      ]
+    };
+
+    let state = loadState();
+
+    const els = {
+      todoKind: document.getElementById("todoKind"),
+      todoChildField: document.getElementById("todoChildField"),
+      todoChild: document.getElementById("todoChild"),
+      todoTitle: document.getElementById("todoTitle"),
+      todoDetail: document.getElementById("todoDetail"),
+      todoDateField: document.getElementById("todoDateField"),
+      todoDateLabel: document.getElementById("todoDateLabel"),
+      todoDate: document.getElementById("todoDate"),
+      todoDeadlineTimeField: document.getElementById("todoDeadlineTimeField"),
+      todoDeadlineTime: document.getElementById("todoDeadlineTime"),
+      eventStartTimeField: document.getElementById("eventStartTimeField"),
+      todoStartTime: document.getElementById("todoStartTime"),
+      eventEndTimeField: document.getElementById("eventEndTimeField"),
+      todoEndTime: document.getElementById("todoEndTime"),
+      todoImportanceField: document.getElementById("todoImportanceField"),
+      todoImportance: document.getElementById("todoImportance"),
+      todoCertaintyField: document.getElementById("todoCertaintyField"),
+      todoCertainty: document.getElementById("todoCertainty"),
+      todoMinutesField: document.getElementById("todoMinutesField"),
+      todoMinutes: document.getElementById("todoMinutes"),
+      todoWarn: document.getElementById("todoWarn"),
+      addViewTitle: document.getElementById("addViewTitle"),
+      addTodo: document.getElementById("addTodo"),
+      newParentName: document.getElementById("newParentName"),
+      addParent: document.getElementById("addParent"),
+      categoryParent: document.getElementById("categoryParent"),
+      newChildName: document.getElementById("newChildName"),
+      addChild: document.getElementById("addChild"),
+      categoryList: document.getElementById("categoryList"),
+      matrixTable: document.getElementById("matrixTable"),
+      monthTitle: document.getElementById("monthTitle"),
+      monthCalendar: document.getElementById("monthCalendar"),
+      prevMonth: document.getElementById("prevMonth"),
+      nextMonth: document.getElementById("nextMonth"),
+      thisMonth: document.getElementById("thisMonth"),
+      selectedDate: document.getElementById("selectedDate"),
+      dayTodos: document.getElementById("dayTodos"),
+      dayTimeline: document.getElementById("dayTimeline"),
+      filterParent: document.getElementById("filterParent"),
+      filterChild: document.getElementById("filterChild"),
+      selectedCategoryLabel: document.getElementById("selectedCategoryLabel"),
+      categoryTodos: document.getElementById("categoryTodos"),
+      completedTodos: document.getElementById("completedTodos"),
+      importanceColorSettings: document.getElementById("importanceColorSettings"),
+      certaintyLabelSettings: document.getElementById("certaintyLabelSettings"),
+      resetVisualSettings: document.getElementById("resetVisualSettings"),
+      exportData: document.getElementById("exportData"),
+      importDataFile: document.getElementById("importDataFile"),
+      importData: document.getElementById("importData"),
+      dataStatus: document.getElementById("dataStatus"),
+      timetableGrid: document.getElementById("timetableGrid"),
+      clearSelectedClass: document.getElementById("clearSelectedClass"),
+      classEditorPanel: document.getElementById("classEditorPanel"),
+      closeClassEditor: document.getElementById("closeClassEditor"),
+      classEditorTitle: document.getElementById("classEditorTitle"),
+      classEditorId: document.getElementById("classEditorId"),
+      classDay: document.getElementById("classDay"),
+      classPeriod: document.getElementById("classPeriod"),
+      classTitle: document.getElementById("classTitle"),
+      classTeacher: document.getElementById("classTeacher"),
+      classRoom: document.getElementById("classRoom"),
+      classStartTime: document.getElementById("classStartTime"),
+      classEndTime: document.getElementById("classEndTime"),
+      classColorPresetGrid: document.getElementById("classColorPresetGrid"),
+      classColorPresetSettings: document.getElementById("classColorPresetSettings"),
+      hiddenPresetColorInput: document.getElementById("hiddenPresetColorInput"),
+      classColorSheet: document.getElementById("classColorSheet"),
+      classPresetColorPicker: document.getElementById("classPresetColorPicker"),
+      classPresetColorSample: document.getElementById("classPresetColorSample"),
+      cancelClassPresetColor: document.getElementById("cancelClassPresetColor"),
+      saveClassPresetColor: document.getElementById("saveClassPresetColor"),
+      saveClass: document.getElementById("saveClass"),
+      deleteClass: document.getElementById("deleteClass"),
+      fabButton: document.getElementById("fabButton"),
+      fabMenu: document.getElementById("fabMenu"),
+      gearButton: document.getElementById("gearButton"),
+      gearMenu: document.getElementById("gearMenu"),
+      openFabHint: document.getElementById("openFabHint"),
+      editModal: document.getElementById("editModal"),
+      closeEditModal: document.getElementById("closeEditModal"),
+      editTodoId: document.getElementById("editTodoId"),
+      editKind: document.getElementById("editKind"),
+      editParent: document.getElementById("editParent"),
+      editChild: document.getElementById("editChild"),
+      editTitleInput: document.getElementById("editTitleInput"),
+      editDetail: document.getElementById("editDetail"),
+      editDateField: document.getElementById("editDateField"),
+      editDateLabel: document.getElementById("editDateLabel"),
+      editDate: document.getElementById("editDate"),
+      editDeadlineTimeField: document.getElementById("editDeadlineTimeField"),
+      editDeadlineTime: document.getElementById("editDeadlineTime"),
+      editStartTimeField: document.getElementById("editStartTimeField"),
+      editStartTime: document.getElementById("editStartTime"),
+      editEndTimeField: document.getElementById("editEndTimeField"),
+      editEndTime: document.getElementById("editEndTime"),
+      editImportanceField: document.getElementById("editImportanceField"),
+      editImportance: document.getElementById("editImportance"),
+      editCertaintyField: document.getElementById("editCertaintyField"),
+      editCertainty: document.getElementById("editCertainty"),
+      editMinutes: document.getElementById("editMinutes"),
+      saveEditTodo: document.getElementById("saveEditTodo"),
+      deleteEditTodo: document.getElementById("deleteEditTodo")
+    };
+
+    function makeId(prefix) {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return prefix + "-" + window.crypto.randomUUID();
+      }
+      return prefix + "-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+    }
+
+    function toDate(dateString) {
+      const [y, m, d] = dateString.split("-").map(Number);
+      return new Date(y, m - 1, d, 12, 0, 0, 0);
+    }
+
+    function toDateString(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + d;
+    }
+
+    function todayString() {
+      const date = new Date();
+      date.setHours(12, 0, 0, 0);
+      return toDateString(date);
+    }
+
+    function dateOffset(dateString, offset) {
+      const date = toDate(dateString);
+      date.setDate(date.getDate() + offset);
+      return toDateString(date);
+    }
+
+    function getDateRange(startDateString, days) {
+      return Array.from({ length: days }, (_, i) => dateOffset(startDateString, i));
+    }
+
+    function dateLabel(dateString) {
+      const d = toDate(dateString);
+      if (Number.isNaN(d.getTime())) return "日付不明";
+      const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+      return (d.getMonth() + 1) + "/" + d.getDate() + "(" + weekdays[d.getDay()] + ")";
+    }
+
+    function weekDateLabel(dateString) {
+      const d = toDate(dateString);
+      const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+      return (d.getMonth() + 1) + "/" + d.getDate() + "\n" + weekdays[d.getDay()];
+    }
+
+    function monthLabel(dateString) {
+      const d = toDate(dateString);
+      return d.getFullYear() + "年" + (d.getMonth() + 1) + "月";
+    }
+
+    function firstDateOfMonth(dateString) {
+      const d = toDate(dateString);
+      return toDateString(new Date(d.getFullYear(), d.getMonth(), 1, 12));
+    }
+
+    function addMonths(dateString, months) {
+      const d = toDate(dateString);
+      return toDateString(new Date(d.getFullYear(), d.getMonth() + months, 1, 12));
+    }
+
+    function importanceRank(value) {
+      if (value === "最高") return 4;
+      if (value === "高") return 3;
+      if (value === "中") return 2;
+      return 1;
+    }
+
+
+    function weekdayIndex(dateString) {
+      return toDate(dateString).getDay();
+    }
+
+    function weekdayNameFromIndex(index) {
+      return ["日", "月", "火", "水", "木", "金", "土"][Number(index)] || "";
+    }
+
+    function defaultPeriodTimes(period) {
+      const table = {
+        1: ["08:30", "10:15"],
+        2: ["10:25", "12:10"],
+        3: ["13:00", "14:45"],
+        4: ["14:55", "16:40"],
+        5: ["16:50", "18:35"],
+        6: ["18:45", "20:30"]
+      };
+      return table[Number(period)] || ["", ""];
+    }
+
+    function periodTimeLabel(period) {
+      const [start, end] = defaultPeriodTimes(period);
+      return `${period}<br>${start}<br>〜<br>${end}`;
+    }
+
+    function classForSlot(day, period) {
+      return state.classes.find(item => Number(item.day) === Number(day) && Number(item.period) === Number(period));
+    }
+
+    function classesForDate(dateString) {
+      const day = weekdayIndex(dateString);
+      if (day < 1 || day > 5) return [];
+      return state.classes
+        .filter(item => Number(item.day) === day)
+        .map(item => ({
+          ...item,
+          date: dateString,
+          kind: "class",
+          startTime: item.startTime || defaultPeriodTimes(item.period)[0],
+          endTime: item.endTime || defaultPeriodTimes(item.period)[1]
+        }))
+        .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    }
+
+    function kindLabel(kind) {
+      return kind === "event" ? "予定" : "Todo";
+    }
+
+    function timeText(todo) {
+      if (todo.kind !== "event") return "";
+      if (todo.startTime && todo.endTime) return todo.startTime + "〜" + todo.endTime;
+      if (todo.startTime) return todo.startTime + "〜";
+      return "時刻未設定";
+    }
+
+    function deadlineText(todo) {
+      if (todo.kind === "event") return dateLabel(todo.date);
+      return todo.deadlineTime ? dateLabel(todo.date) + " " + todo.deadlineTime : dateLabel(todo.date);
+    }
+
+    function hourFromTime(value) {
+      if (!/^\d{2}:\d{2}$/.test(String(value))) return null;
+      return Number(value.slice(0, 2));
+    }
+
+    function minutesFromTime(value) {
+      if (!/^\d{2}:\d{2}$/.test(String(value))) return null;
+      return Number(value.slice(0, 2)) * 60 + Number(value.slice(3, 5));
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function clone(value) {
+      if (typeof structuredClone === "function") return structuredClone(value);
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function mergeCertaintyOptions(savedOptions) {
+      const defaults = clone(initialState.certaintyOptions);
+      if (!Array.isArray(savedOptions)) return defaults;
+      return defaults.map(option => {
+        const saved = savedOptions.find(item => item && item.id === option.id);
+        return saved ? { ...option, label: String(saved.label || option.label).slice(0, 12) } : option;
+      });
+    }
+
+    function safeColor(value, fallback = "#e2e8f0") {
+      return /^#[0-9a-fA-F]{6}$/.test(String(value)) ? value : fallback;
+    }
+
+    function mergeClassColorPresets(savedPresets) {
+      const defaults = clone(initialState.classColorPresets);
+      if (!Array.isArray(savedPresets)) return defaults;
+      return defaults.map(defaultPreset => {
+        const saved = savedPresets.find(item => item && item.id === defaultPreset.id);
+        return saved
+          ? { ...defaultPreset, color: safeColor(saved.color, defaultPreset.color) }
+          : defaultPreset;
+      });
+    }
+
+    function normalizeClassColor(classItem, presets = state.classColorPresets) {
+      if (classItem.colorKey) return classItem;
+      const matched = presets.find(preset => safeColor(preset.color).toLowerCase() === safeColor(classItem.color, "").toLowerCase());
+      return { ...classItem, colorKey: matched?.id || "blue" };
+    }
+
+    function classPresetColor(colorKey) {
+      const preset = state.classColorPresets.find(item => item.id === colorKey);
+      return safeColor(preset?.color, "#bfdbfe");
+    }
+
+    function classPresetName(colorKey) {
+      const preset = state.classColorPresets.find(item => item.id === colorKey);
+      return preset?.name || "青";
+    }
+
+    function loadState() {
+      try {
+        let raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          for (const key of OLD_KEYS) {
+            raw = localStorage.getItem(key);
+            if (raw) break;
+          }
+        }
+        if (!raw) return clone(initialState);
+        const parsed = JSON.parse(raw);
+        const loaded = {
+          ...clone(initialState),
+          ...parsed,
+          parents: Array.isArray(parsed.parents) ? parsed.parents : clone(initialState.parents),
+          todos: Array.isArray(parsed.todos) ? parsed.todos : clone(initialState.todos),
+          classes: Array.isArray(parsed.classes) ? parsed.classes : [],
+          classColorPresets: Array.isArray(parsed.classColorPresets) ? parsed.classColorPresets : clone(initialState.classColorPresets)
+        };
+        loaded.view = ["matrix", "month", "day", "category", "completed", "add", "manage", "settings", "timetable", "data"].includes(loaded.view) ? loaded.view : "matrix";
+        loaded.categoryColors = { ...clone(initialState.categoryColors), ...(parsed.categoryColors || {}) };
+        loaded.importanceColors = { ...clone(initialState.importanceColors), ...(parsed.importanceColors || {}) };
+        loaded.certaintyOptions = mergeCertaintyOptions(parsed.certaintyOptions);
+        loaded.todos = loaded.todos.map(todo => {
+          const kind = todo.kind || "todo";
+          const certaintyId = kind === "event"
+            ? (todo.certaintyId === "candidate" ? "uncertain" : (todo.certaintyId || "confirmed"))
+            : "";
+          return {
+            ...todo,
+            kind,
+            startTime: todo.startTime || "",
+            endTime: todo.endTime || "",
+            deadlineTime: todo.deadlineTime || "",
+            certaintyId
+          };
+        });
+        loaded.classColorPresets = mergeClassColorPresets(loaded.classColorPresets);
+        loaded.classes = loaded.classes.map(classItem => normalizeClassColor(classItem, loaded.classColorPresets));
+        loaded.selectedDate = loaded.selectedDate || todayString();
+        loaded.monthCursor = loaded.monthCursor || todayString();
+        loaded.lastKnownToday = loaded.lastKnownToday || todayString();
+        return loaded;
+      } catch {
+        return clone(initialState);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function flatCategories() {
+      return state.parents.flatMap(parent =>
+        parent.children.map(child => ({
+          parentId: parent.id,
+          parentName: parent.name,
+          childId: child.id,
+          childName: child.name,
+          label: parent.name + " / " + child.name
+        }))
+      );
+    }
+
+    function getParent(id) {
+      return state.parents.find(parent => parent.id === id);
+    }
+
+    function getCategoryByChildId(childId) {
+      return flatCategories().find(category => category.childId === childId);
+    }
+
+    function getFirstChildId(parentId) {
+      return getParent(parentId)?.children?.[0]?.id || "";
+    }
+
+    function isOverdueTodo(todo) {
+      return !todo.done && todo.date < todayString();
+    }
+
+    function getCertaintyOption(id) {
+      return state.certaintyOptions.find(option => option.id === id) || state.certaintyOptions[0];
+    }
+
+    function certaintyLabel(id) {
+      return getCertaintyOption(id)?.label || "確定";
+    }
+
+    function categoryColor(todo) {
+      return safeColor(state.categoryColors[todo.childId], "#e2e8f0");
+    }
+
+    function importanceColor(value) {
+      return safeColor(state.importanceColors[value], "#e2e8f0");
+    }
+
+    function visualStyleForTodo(todo, isCarryOver) {
+      const level = isCarryOver ? "最高" : todo.importance;
+      const border = importanceColor(level);
+      if (isCarryOver) {
+        return `border: 2px solid ${border}; background: #fff7f7;`;
+      }
+      return `border: 2px solid ${border};`;
+    }
+
+    function previewDot(color) {
+      return `<span class="color-preview" style="background:${safeColor(color)}"></span>`;
+    }
+
+    function effectiveTodosForDate(dateString) {
+      const base = state.todos
+        .filter(todo => todo.date === dateString)
+        .map(todo => ({ todo, isCarryOver: false }));
+
+      if (dateString === todayString()) {
+        const carried = state.todos
+          .filter(isOverdueTodo)
+          .map(todo => ({ todo, isCarryOver: true }));
+        return [...carried, ...base].sort((a, b) => {
+          const rankA = a.isCarryOver ? 4 : importanceRank(a.todo.importance);
+          const rankB = b.isCarryOver ? 4 : importanceRank(b.todo.importance);
+          return rankB - rankA || a.todo.date.localeCompare(b.todo.date);
+        });
+      }
+
+      return base.sort((a, b) => importanceRank(b.todo.importance) - importanceRank(a.todo.importance));
+    }
+
+    function fillSelect(select, options, selectedValue) {
+      select.innerHTML = options.map(option =>
+        `<option value="${escapeHtml(option.value)}"${option.value === selectedValue ? " selected" : ""}>${escapeHtml(option.label)}</option>`
+      ).join("");
+    }
+
+    function renderSelects() {
+      const parentOptions = state.parents.map(parent => ({ value: parent.id, label: parent.name }));
+
+      const allChildOptions = flatCategories().map(category => ({
+        value: category.childId,
+        label: category.label
+      }));
+      fillSelect(
+        els.todoChild,
+        allChildOptions,
+        els.todoChild.value || allChildOptions[0]?.value || ""
+      );
+      els.todoChild.disabled = allChildOptions.length === 0;
+
+      fillSelect(els.categoryParent, parentOptions, state.selectedParentId);
+      fillSelect(els.filterParent, parentOptions, state.filterParentId);
+
+      const filterChildren = getParent(state.filterParentId)?.children || [];
+      fillSelect(
+        els.filterChild,
+        filterChildren.map(child => ({ value: child.id, label: child.name })),
+        state.filterChildId || filterChildren[0]?.id || ""
+      );
+      els.filterChild.disabled = filterChildren.length === 0;
+
+      fillSelect(
+        els.todoCertainty,
+        state.certaintyOptions.map(option => ({ value: option.id, label: option.label })),
+        els.todoCertainty.value || "confirmed"
+      );
+
+      fillSelect(els.editParent, parentOptions, els.editParent.value || state.selectedParentId);
+      const editParentId = els.editParent.value || state.parents[0]?.id || "";
+      fillSelect(
+        els.editChild,
+        (getParent(editParentId)?.children || []).map(child => ({ value: child.id, label: child.name })),
+        els.editChild.value || getFirstChildId(editParentId)
+      );
+      els.editChild.disabled = (getParent(editParentId)?.children || []).length === 0;
+
+      fillSelect(
+        els.editCertainty,
+        state.certaintyOptions.map(option => ({ value: option.id, label: option.label })),
+        els.editCertainty.value || "confirmed"
+      );
+    }
+
+    function updateTodoFormVisibility() {
+      const isEvent = els.todoKind.value === "event";
+      els.addViewTitle.textContent = isEvent ? "予定を追加" : "Todoを追加";
+      els.todoDateLabel.textContent = isEvent ? "日程" : "締切日";
+      els.todoChildField.classList.toggle("hidden-field", isEvent);
+      els.todoImportanceField.classList.toggle("hidden-field", isEvent);
+      els.todoMinutesField.classList.toggle("hidden-field", isEvent);
+      els.todoDeadlineTimeField.classList.toggle("hidden-field", isEvent);
+      els.eventStartTimeField.classList.toggle("hidden-field", !isEvent);
+      els.eventEndTimeField.classList.toggle("hidden-field", !isEvent);
+      els.todoCertaintyField.classList.toggle("hidden-field", !isEvent);
+    }
+
+    function renderCategories() {
+      els.categoryList.innerHTML = state.parents.map(parent => {
+        const children = parent.children.length
+          ? parent.children.map(child => `
+              <span class="chip-with-delete">
+                ${escapeHtml(child.name)}
+                <button class="chip-delete" data-action="delete-child-category" data-parent-id="${escapeHtml(parent.id)}" data-child-id="${escapeHtml(child.id)}" title="子カテゴリを削除">×</button>
+              </span>
+            `).join("")
+          : `<span class="chip">子カテゴリなし</span>`;
+
+        return `
+          <div class="category-box">
+            <div class="category-head">
+              <p>${escapeHtml(parent.name)}</p>
+              <button class="category-delete" data-action="delete-parent-category" data-parent-id="${escapeHtml(parent.id)}">削除</button>
+            </div>
+            <div class="chips">${children}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderMatrix() {
+      const dates = getDateRange(todayString(), 7);
+      const categories = flatCategories();
+
+      const header = `
+        <thead>
+          <tr>
+            <th>項目</th>
+            ${dates.map(date => `<th class="date-head ${date === todayString() ? "today" : ""}">${escapeHtml(weekDateLabel(date)).replace("\n", "<br>")}</th>`).join("")}
+          </tr>
+        </thead>
+      `;
+
+      const body = categories.map(category => {
+        const cells = dates.map(date => {
+          const cellTodos = effectiveTodosForDate(date)
+            .filter(entry => entry.todo.kind !== "event" && entry.todo.childId === category.childId);
+
+          return `
+            <td>
+              ${cellTodos.map(entry => miniTodoHtml(entry.todo, entry.isCarryOver)).join("")}
+            </td>
+          `;
+        }).join("");
+
+        return `
+          <tr>
+            <td>
+              ${escapeHtml(category.childName)}
+              <div class="parent-name">${escapeHtml(category.parentName)}</div>
+            </td>
+            ${cells}
+          </tr>
+        `;
+      }).join("");
+
+      els.matrixTable.innerHTML = `<table>${header}<tbody>${body}</tbody></table>`;
+    }
+
+    function miniTodoHtml(todo, isCarryOver) {
+      const isDone = todo.done && !isCarryOver;
+      const certainty = certaintyLabel(todo.certaintyId);
+      const importanceText = isCarryOver ? "最高" : todo.importance;
+      return `
+        <div class="mini-todo ${isDone ? "done" : ""} ${isCarryOver ? "overdue" : ""}" style="${visualStyleForTodo(todo, isCarryOver)}">
+          <div class="mini-row">
+            <button class="small-btn" data-action="toggle" data-id="${escapeHtml(todo.id)}" title="完了切り替え">✓</button>
+            <div class="task-clickable" data-action="edit" data-id="${escapeHtml(todo.id)}" style="min-width:0; flex:1;">
+              <p class="mini-title ${isDone ? "done" : ""}">${escapeHtml(todo.kind === "event" && todo.startTime ? todo.startTime + " " + todo.title : todo.title)}</p>
+              <p class="mini-meta">
+                <span class="importance-badge" style="background:${importanceColor(importanceText)}">${escapeHtml(importanceText)}</span>
+                ${todo.kind === "event" || isCarryOver ? `<span class="certainty-badge">${escapeHtml(isCarryOver ? "期限切れ" : certainty)}</span>` : ""}
+              </p>
+            </div>
+            <button class="small-btn" data-action="delete" data-id="${escapeHtml(todo.id)}" title="削除">×</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function todoListHtml(entries, emptyText) {
+      const categories = flatCategories();
+
+      if (entries.length === 0) {
+        return `<div class="empty">${escapeHtml(emptyText)}</div>`;
+      }
+
+      return entries.map(entry => {
+        const todo = entry.todo || entry;
+        const isCarryOver = Boolean(entry.isCarryOver);
+        const category = categories.find(item => item.childId === todo.childId);
+        const isDone = todo.done && !isCarryOver;
+
+        return `
+          <article class="todo-card ${isCarryOver ? "overdue" : ""}" style="${visualStyleForTodo(todo, isCarryOver)}">
+            <div class="todo-left">
+              <input type="checkbox" data-action="toggle" data-id="${escapeHtml(todo.id)}" ${todo.done ? "checked" : ""} />
+              <div class="todo-main task-clickable" data-action="edit" data-id="${escapeHtml(todo.id)}">
+                <p class="todo-title ${isDone ? "done" : ""} ${isCarryOver ? "overdue" : ""}">${escapeHtml(todo.title)}</p>
+                <p class="todo-detail">${escapeHtml(todo.detail || "詳細なし")}</p>
+                <div class="todo-meta">
+                  <span class="kind-badge">${escapeHtml(kindLabel(todo.kind))}</span>
+                  <span class="badge">${escapeHtml(category?.label || "カテゴリ不明")}</span>
+                  <span class="badge">${escapeHtml(isCarryOver ? "元の締切: " + deadlineText(todo) : (todo.kind === "event" ? dateLabel(todo.date) : "締切: " + deadlineText(todo)))}</span>
+                  ${todo.kind === "event" ? `<span class="badge">${escapeHtml(timeText(todo))}</span>` : ""}
+                  <span class="importance-badge" style="background:${importanceColor(isCarryOver ? "最高" : todo.importance)}">重要度: ${isCarryOver ? "最高" : escapeHtml(todo.importance)}</span>
+                  ${todo.kind === "event" || isCarryOver ? `<span class="certainty-badge">${escapeHtml(isCarryOver ? "期限切れ" : certaintyLabel(todo.certaintyId))}</span>` : ""}
+                  ${todo.kind !== "event" ? `<span class="badge">${Number(todo.minutes) || 0}分</span>` : ""}
+                </div>
+              </div>
+            </div>
+            <button class="delete" data-action="delete" data-id="${escapeHtml(todo.id)}">削除</button>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderDay() {
+      els.selectedDate.value = state.selectedDate;
+      const entries = effectiveTodosForDate(state.selectedDate);
+      els.dayTodos.innerHTML = todoListHtml(entries, "この日の予定はありません。");
+      renderDayTimeline();
+    }
+
+    function renderDayTimeline() {
+      const allDayEntries = effectiveTodosForDate(state.selectedDate)
+        .filter(entry => entry.todo.kind !== "event" || !entry.todo.startTime);
+
+      const timedEvents = [
+        ...state.todos.filter(todo => todo.date === state.selectedDate && todo.kind === "event" && todo.startTime),
+        ...classesForDate(state.selectedDate)
+      ].sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+      const allDayHtml = allDayEntries.length
+        ? `<div class="all-day-box"><h3>時刻なし・Todo</h3>${todoListHtml(allDayEntries, "")}</div>`
+        : "";
+
+      const startHour = 5;
+      const endHour = 24;
+      const pxPerHour = 64;
+      const timelineHeight = (endHour - startHour) * pxPerHour;
+      const timelineStartMinutes = startHour * 60;
+      const timelineEndMinutes = endHour * 60;
+
+      const labels = Array.from({ length: endHour - startHour + 1 }, (_, index) => {
+        const hour = startHour + index;
+        const top = index * pxPerHour;
+        const hourText = String(hour).padStart(2, "0") + ":00";
+        return `<div class="timeline-hour-label" style="top:${top}px">${hourText}</div>`;
+      }).join("");
+
+      const lines = Array.from({ length: endHour - startHour + 1 }, (_, index) => {
+        const top = index * pxPerHour;
+        return `<div class="timeline-hour-line" style="top:${top}px"></div>`;
+      }).join("");
+
+      const eventBlocks = timedEvents.map(todo => {
+        const start = minutesFromTime(todo.startTime);
+        const end = minutesFromTime(todo.endTime) ?? (start === null ? null : start + 60);
+        if (start === null) return "";
+
+        const clippedStart = clamp(start, timelineStartMinutes, timelineEndMinutes);
+        const clippedEnd = clamp(Math.max(end, start + 30), timelineStartMinutes, timelineEndMinutes);
+        if (clippedEnd <= timelineStartMinutes || clippedStart >= timelineEndMinutes) return "";
+
+        const top = ((clippedStart - timelineStartMinutes) / 60) * pxPerHour;
+        const height = Math.max(28, ((clippedEnd - clippedStart) / 60) * pxPerHour);
+        const action = todo.kind === "class" ? "open-timetable" : "edit";
+        const borderStyle = todo.kind === "class"
+          ? "border:2px solid " + classPresetColor(todo.colorKey)
+          : visualStyleForTodo(todo, false);
+        const meta = todo.kind === "class"
+          ? `${todo.startTime}〜${todo.endTime}${todo.room ? "・" + todo.room : ""}`
+          : `${timeText(todo)}・${certaintyLabel(todo.certaintyId)}`;
+
+        return `
+          <div
+            class="timeline-event-block ${todo.kind === "class" ? "class-item" : ""}"
+            data-action="${action}"
+            data-id="${escapeHtml(todo.id)}"
+            style="top:${top}px; height:${height}px; ${borderStyle}"
+          >
+            <div class="timeline-event-title">${escapeHtml(todo.title)}</div>
+            <div class="timeline-event-meta">${escapeHtml(meta)}</div>
+          </div>
+        `;
+      }).join("");
+
+      els.dayTimeline.innerHTML = `
+        ${allDayHtml}
+        <div class="card" style="box-shadow:none; border:1px solid var(--line); padding:12px;">
+          <h2>24時間表示</h2>
+          <p class="desc">開始時刻と終了時刻に合わせて、予定と授業を縦方向の位置と高さで表示します。</p>
+          <div class="visual-timeline" style="--timeline-height:${timelineHeight}px;">
+            <div class="timeline-labels">${labels}</div>
+            <div class="timeline-area">${lines}${eventBlocks}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCategory() {
+      const currentParent = getParent(state.filterParentId);
+      const currentChildren = currentParent?.children || [];
+
+      if (!state.filterChildId && currentChildren.length > 0) {
+        state.filterChildId = currentChildren[0].id;
+      }
+
+      const selected = flatCategories().find(
+        category => category.parentId === state.filterParentId && category.childId === state.filterChildId
+      );
+
+      els.selectedCategoryLabel.textContent = selected?.label || "未選択";
+
+      const entries = state.todos
+        .filter(todo => todo.parentId === state.filterParentId && todo.childId === state.filterChildId)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map(todo => ({ todo, isCarryOver: false }));
+
+      els.categoryTodos.innerHTML = todoListHtml(entries, "このカテゴリのTodoはありません。");
+    }
+
+
+    function renderCompleted() {
+      const entries = state.todos
+        .filter(todo => todo.done)
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .map(todo => ({ todo, isCarryOver: false }));
+
+      els.completedTodos.innerHTML = todoListHtml(entries, "達成済みのタスクはありません。");
+    }
+
+    function renderMonth() {
+      const cursor = firstDateOfMonth(state.monthCursor || todayString());
+      const first = toDate(cursor);
+      const start = new Date(first.getFullYear(), first.getMonth(), 1 - first.getDay(), 12);
+      const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+      const cells = Array.from({ length: 42 }, (_, i) => {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        return toDateString(d);
+      });
+
+      els.monthTitle.textContent = monthLabel(cursor);
+
+      const weekdayHtml = weekdays.map(day => `<div class="weekday">${day}</div>`).join("");
+      const cellHtml = cells.map(date => {
+        const d = toDate(date);
+        const outside = d.getMonth() !== first.getMonth();
+        const today = date === todayString();
+        const entries = effectiveTodosForDate(date).slice(0, 3);
+        const allCount = effectiveTodosForDate(date).length;
+        return `
+          <div class="month-cell ${outside ? "outside" : ""} ${today ? "today" : ""}" data-action="select-day" data-date="${escapeHtml(date)}">
+            <div class="month-day">${d.getDate()}</div>
+            ${entries.map(entry => `
+              <div class="month-mini task-clickable ${entry.isCarryOver ? "overdue" : ""}" data-action="edit" data-id="${escapeHtml(entry.todo.id)}" style="${entry.isCarryOver ? "" : "border:1px solid " + importanceColor(entry.todo.importance)}">
+                <span class="month-mini-inner">${escapeHtml(entry.todo.title)}</span>
+              </div>
+            `).join("")}
+            ${allCount > 3 ? `<div class="month-more">ほか${allCount - 3}件</div>` : ""}
+          </div>
+        `;
+      }).join("");
+
+      els.monthCalendar.innerHTML = `<div class="month-grid">${weekdayHtml}${cellHtml}</div>`;
+    }
+
+
+
+
+    function renderClassColorPresetGrid(selectedKey = "blue") {
+      els.classColorPresetGrid.dataset.selectedColorKey = selectedKey;
+      els.classColorPresetGrid.innerHTML = state.classColorPresets.map(preset => `
+        <button type="button" class="preset-button ${preset.id === selectedKey ? "selected" : ""}" data-class-color-key="${escapeHtml(preset.id)}" data-preset-longpress="${escapeHtml(preset.id)}">
+          <span class="preset-swatch" style="background:${safeColor(preset.color)}"></span>
+          ${escapeHtml(preset.name)}
+        </button>
+      `).join("");
+    }
+
+    function renderClassColorPresetSettings() {
+      els.classColorPresetSettings.innerHTML = state.classColorPresets.map(preset => `
+        <div class="color-row">
+          <div class="color-label">${previewDot(preset.color)}${escapeHtml(preset.name)}</div>
+          <button type="button" class="secondary" data-preset-longpress="${escapeHtml(preset.id)}">長押し</button>
+        </div>
+      `).join("");
+    }
+
+    function startPresetLongPress(target) {
+      const presetId = target.dataset.presetLongpress;
+      if (!presetId) return;
+      clearTimeout(window.__presetLongPressTimer);
+      window.__presetLongPressTimer = setTimeout(() => {
+        openClassPresetColorSheet(presetId);
+      }, 550);
+    }
+
+    function cancelPresetLongPress() {
+      clearTimeout(window.__presetLongPressTimer);
+    }
+
+    function openClassPresetColorSheet(presetId) {
+      const preset = state.classColorPresets.find(item => item.id === presetId);
+      if (!preset) return;
+      els.classColorSheet.dataset.editingPresetId = presetId;
+      els.classPresetColorPicker.value = safeColor(preset.color);
+      els.classPresetColorSample.style.background = safeColor(preset.color);
+      els.classColorSheet.classList.add("show");
+      els.classColorSheet.setAttribute("aria-hidden", "false");
+    }
+
+    function closeClassPresetColorSheet() {
+      els.classColorSheet.classList.remove("show");
+      els.classColorSheet.setAttribute("aria-hidden", "true");
+      els.classColorSheet.dataset.editingPresetId = "";
+    }
+
+    function saveClassPresetColorFromSheet() {
+      const presetId = els.classColorSheet.dataset.editingPresetId;
+      if (!presetId) return;
+      updateClassColorPreset(presetId, els.classPresetColorPicker.value);
+      closeClassPresetColorSheet();
+    }
+
+    function updateClassColorPreset(presetId, color) {
+      const preset = state.classColorPresets.find(item => item.id === presetId);
+      if (!preset) return;
+      preset.color = safeColor(color, preset.color);
+      renderAll();
+    }
+
+    function renderTimetable() {
+      const days = [1, 2, 3, 4, 5];
+      const periods = [1, 2, 3, 4, 5, 6];
+      const dayHeads = ["時限", "月", "火", "水", "木", "金"];
+
+      const heads = dayHeads.map(text => `<div class="tt-head">${text}</div>`).join("");
+      const rows = periods.map(period => {
+        const time = `<div class="tt-time">${periodTimeLabel(period)}</div>`;
+        const cells = days.map(day => {
+          const item = classForSlot(day, period);
+          if (!item) {
+            return `
+              <div class="tt-cell" data-action="edit-class-slot" data-day="${day}" data-period="${period}">
+                <div class="tt-card empty"></div>
+              </div>
+            `;
+          }
+          return `
+            <div class="tt-cell" data-action="edit-class" data-id="${escapeHtml(item.id)}">
+              <div class="tt-card" style="background:${classPresetColor(item.colorKey)}">
+                <div class="tt-title">${escapeHtml(item.title || "無題")}</div>
+                <div class="tt-room">${escapeHtml(item.room || "教室未入力")}</div>
+              </div>
+            </div>
+          `;
+        }).join("");
+        return time + cells;
+      }).join("");
+
+      els.timetableGrid.innerHTML = heads + rows;
+    }
+
+    function showClassEditor() {
+      els.classEditorPanel.classList.add("show");
+      els.classEditorPanel.setAttribute("aria-hidden", "false");
+    }
+
+    function closeClassEditor() {
+      els.classEditorPanel.classList.remove("show");
+      els.classEditorPanel.setAttribute("aria-hidden", "true");
+    }
+
+    function clearClassEditor() {
+      els.classEditorId.value = "";
+      els.classEditorTitle.textContent = "授業を追加・編集";
+      els.classDay.value = "1";
+      els.classPeriod.value = "1";
+      els.classTitle.value = "";
+      els.classTeacher.value = "";
+      els.classRoom.value = "";
+      const [start, end] = defaultPeriodTimes(1);
+      els.classStartTime.value = start;
+      els.classEndTime.value = end;
+      renderClassColorPresetGrid("blue");
+    }
+
+    function openClassEditor(id) {
+      const item = state.classes.find(classItem => classItem.id === id);
+      if (!item) return;
+      els.classEditorId.value = item.id;
+      els.classEditorTitle.textContent = item.title || "授業を編集";
+      els.classDay.value = String(item.day);
+      els.classPeriod.value = String(item.period);
+      els.classTitle.value = item.title || "";
+      els.classTeacher.value = item.teacher || "";
+      els.classRoom.value = item.room || "";
+      els.classStartTime.value = item.startTime || defaultPeriodTimes(item.period)[0];
+      els.classEndTime.value = item.endTime || defaultPeriodTimes(item.period)[1];
+      renderClassColorPresetGrid(item.colorKey || "blue");
+      showClassEditor();
+    }
+
+    function openClassSlot(day, period) {
+      const existing = classForSlot(day, period);
+      if (existing) {
+        openClassEditor(existing.id);
+        return;
+      }
+      els.classEditorId.value = "";
+      els.classEditorTitle.textContent = `${weekdayNameFromIndex(day)}曜${period}限を追加`;
+      els.classDay.value = String(day);
+      els.classPeriod.value = String(period);
+      els.classTitle.value = "";
+      els.classTeacher.value = "";
+      els.classRoom.value = "";
+      const [start, end] = defaultPeriodTimes(period);
+      els.classStartTime.value = start;
+      els.classEndTime.value = end;
+      renderClassColorPresetGrid("blue");
+      showClassEditor();
+    }
+
+    function saveClass() {
+      const title = els.classTitle.value.trim();
+      if (!title) return;
+
+      const id = els.classEditorId.value || makeId("class");
+      const data = {
+        id,
+        day: Number(els.classDay.value),
+        period: Number(els.classPeriod.value),
+        title,
+        teacher: els.classTeacher.value.trim(),
+        room: els.classRoom.value.trim(),
+        startTime: els.classStartTime.value || defaultPeriodTimes(Number(els.classPeriod.value))[0],
+        endTime: els.classEndTime.value || defaultPeriodTimes(Number(els.classPeriod.value))[1],
+        colorKey: els.classColorPresetGrid.dataset.selectedColorKey || "blue"
+      };
+
+      const otherClasses = state.classes.filter(item => item.id !== id && !(Number(item.day) === data.day && Number(item.period) === data.period));
+      state.classes = [...otherClasses, data];
+      els.classEditorId.value = id;
+      renderAll();
+      closeClassEditor();
+    }
+
+    function deleteClass() {
+      const id = els.classEditorId.value;
+      if (!id) return;
+      state.classes = state.classes.filter(item => item.id !== id);
+      clearClassEditor();
+      closeClassEditor();
+      renderAll();
+    }
+
+    function renderSettings() {
+      els.importanceColorSettings.innerHTML = ["低", "中", "高", "最高"].map(level => `
+        <div class="color-row">
+          <div class="color-label">${previewDot(importanceColor(level))}重要度: ${escapeHtml(level)}</div>
+          <input type="color" value="${importanceColor(level)}" data-setting="importance-color" data-id="${escapeHtml(level)}" />
+        </div>
+      `).join("");
+
+      renderClassColorPresetSettings();
+
+      els.certaintyLabelSettings.innerHTML = state.certaintyOptions.map(option => `
+        <div class="label-row">
+          <div class="label-name">${escapeHtml(option.id === "confirmed" ? "確定" : option.id === "likely" ? "可能性高" : "未確定")}</div>
+          <input value="${escapeHtml(option.label)}" maxlength="12" data-setting="certainty-label" data-id="${escapeHtml(option.id)}" />
+        </div>
+      `).join("");
+    }
+
+
+    function openFabMenu() {
+      els.fabButton.classList.add("open");
+      els.fabMenu.classList.add("show");
+      els.fabMenu.setAttribute("aria-hidden", "false");
+    }
+
+    function closeFabMenu() {
+      els.fabButton.classList.remove("open");
+      els.fabMenu.classList.remove("show");
+      els.fabMenu.setAttribute("aria-hidden", "true");
+    }
+
+    function toggleFabMenu() {
+      if (els.fabMenu.classList.contains("show")) closeFabMenu();
+      else {
+        closeGearMenu();
+        openFabMenu();
+      }
+    }
+
+    function openGearMenu() {
+      els.gearMenu.classList.add("show");
+      els.gearMenu.setAttribute("aria-hidden", "false");
+    }
+
+    function closeGearMenu() {
+      els.gearMenu.classList.remove("show");
+      els.gearMenu.setAttribute("aria-hidden", "true");
+    }
+
+    function toggleGearMenu() {
+      if (els.gearMenu.classList.contains("show")) closeGearMenu();
+      else {
+        closeFabMenu();
+        openGearMenu();
+      }
+    }
+
+    function goFromGear(view) {
+      state.view = view;
+      closeGearMenu();
+      renderAll();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function goFromFab(view, kind) {
+      state.view = view;
+      if (view === "add" && kind) {
+        els.todoKind.value = kind;
+        updateTodoFormVisibility();
+      }
+      closeFabMenu();
+      renderAll();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+
+    function setDataStatus(message, isError = false) {
+      if (!els.dataStatus) return;
+      els.dataStatus.textContent = message;
+      els.dataStatus.style.background = isError ? "#fff7ed" : "#f8fafc";
+      els.dataStatus.style.color = isError ? "#9a3412" : "#475569";
+      els.dataStatus.style.borderColor = isError ? "#fed7aa" : "#e2e8f0";
+    }
+
+    function exportData() {
+      const payload = {
+        app: "Todo Calendar Board",
+        storageKey: STORAGE_KEY,
+        exportedAt: new Date().toISOString(),
+        state
+      };
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const date = todayString().replaceAll("-", "");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `todo-calendar-board-backup-${date}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setDataStatus("データを書き出しました。ダウンロードフォルダを確認してください。");
+    }
+
+    function validateImportedState(imported) {
+      if (!imported || typeof imported !== "object") {
+        throw new Error("JSONの形式が正しくありません。");
+      }
+      const importedState = imported.state && typeof imported.state === "object" ? imported.state : imported;
+      if (!Array.isArray(importedState.parents)) {
+        throw new Error("カテゴリ情報が見つかりません。");
+      }
+      if (!Array.isArray(importedState.todos)) {
+        throw new Error("Todo情報が見つかりません。");
+      }
+      return importedState;
+    }
+
+    async function importData() {
+      const file = els.importDataFile.files?.[0];
+      if (!file) {
+        setDataStatus("先にJSONファイルを選択してください。", true);
+        return;
+      }
+
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        const importedState = validateImportedState(parsed);
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(importedState));
+        state = loadState();
+        saveState();
+        renderAll();
+        setDataStatus("データを復元しました。");
+      } catch (error) {
+        setDataStatus("インポートできませんでした: " + error.message, true);
+      }
+    }
+
+    function renderViews() {
+      document.querySelectorAll("[data-view-button]").forEach(button => {
+        button.classList.toggle("active", button.dataset.viewButton === state.view);
+      });
+
+      document.querySelectorAll(".main-view").forEach(view => {
+        view.classList.remove("active");
+      });
+
+      const target = document.getElementById(state.view + "View");
+      if (target) target.classList.add("active");
+    }
+
+    function renderAll() {
+      normalizeDateChange();
+      saveState();
+      renderSelects();
+      updateTodoFormVisibility();
+      renderCategories();
+      renderMatrix();
+      renderMonth();
+      renderDay();
+      renderCategory();
+      renderCompleted();
+      renderTimetable();
+      renderSettings();
+      renderViews();
+    }
+
+    function normalizeDateChange() {
+      const currentToday = todayString();
+      if (state.lastKnownToday !== currentToday) {
+        if (state.selectedDate === state.lastKnownToday) {
+          state.selectedDate = currentToday;
+        }
+        if (firstDateOfMonth(state.monthCursor) === firstDateOfMonth(state.lastKnownToday)) {
+          state.monthCursor = currentToday;
+        }
+        state.lastKnownToday = currentToday;
+      }
+    }
+
+    function addTodo() {
+      const kind = els.todoKind.value || "todo";
+      const selectedChildId = els.todoChild.value;
+      const selectedCategory = getCategoryByChildId(selectedChildId) || flatCategories()[0];
+      const parentId = kind === "event" ? (selectedCategory?.parentId || "") : (selectedCategory?.parentId || "");
+      const childId = kind === "event" ? (selectedCategory?.childId || "") : selectedChildId;
+      const title = els.todoTitle.value.trim();
+
+      if (!title || (!childId && kind === "todo")) {
+        els.todoWarn.classList.add("show");
+        return;
+      }
+
+      els.todoWarn.classList.remove("show");
+
+      state.todos.push({
+        id: makeId("todo"),
+        kind,
+        parentId,
+        childId,
+        title,
+        detail: els.todoDetail.value.trim(),
+        date: els.todoDate.value || todayString(),
+        startTime: kind === "event" ? (els.todoStartTime.value || "") : "",
+        endTime: kind === "event" ? (els.todoEndTime.value || "") : "",
+        deadlineTime: kind === "event" ? "" : (els.todoDeadlineTime.value || ""),
+        importance: kind === "event" ? "中" : els.todoImportance.value,
+        certaintyId: kind === "event" ? (els.todoCertainty.value || "confirmed") : "",
+        minutes: kind === "event" ? 0 : (Number(els.todoMinutes.value) || 0),
+        done: false
+      });
+
+      els.todoTitle.value = "";
+      els.todoDetail.value = "";
+      els.todoMinutes.value = "30";
+      els.todoStartTime.value = "";
+      els.todoEndTime.value = "";
+      els.todoDeadlineTime.value = "";
+      els.todoCertainty.value = "confirmed";
+      state.view = kind === "event" ? "day" : "matrix";
+      if (kind === "event") state.selectedDate = els.todoDate.value || todayString();
+      renderAll();
+    }
+
+
+    function ensureValidCategorySelections() {
+      const firstParent = state.parents[0];
+      if (!firstParent) {
+        state.selectedParentId = "";
+        state.filterParentId = "";
+        state.filterChildId = "all";
+        state.selectedChildId = "";
+        return;
+      }
+
+      if (!state.parents.some(parent => parent.id === state.selectedParentId)) {
+        state.selectedParentId = firstParent.id;
+      }
+
+      if (!state.parents.some(parent => parent.id === state.filterParentId)) {
+        state.filterParentId = firstParent.id;
+        state.filterChildId = "all";
+      }
+
+      const selectedParent = getParent(state.selectedParentId);
+      if (selectedParent && state.selectedChildId && !selectedParent.children.some(child => child.id === state.selectedChildId)) {
+        state.selectedChildId = selectedParent.children[0]?.id || "";
+      }
+    }
+
+    function deleteParentCategory(parentId) {
+      const parent = getParent(parentId);
+      if (!parent) return;
+
+      const message = `親カテゴリ「${parent.name}」を削除します。この中の子カテゴリとTodoも削除されます。`;
+      if (!window.confirm(message)) return;
+
+      const childIds = parent.children.map(child => child.id);
+      state.parents = state.parents.filter(item => item.id !== parentId);
+      state.todos = state.todos.filter(todo => todo.parentId !== parentId && !childIds.includes(todo.childId));
+
+      ensureValidCategorySelections();
+      renderAll();
+    }
+
+    function deleteChildCategory(parentId, childId) {
+      const parent = getParent(parentId);
+      const child = parent?.children.find(item => item.id === childId);
+      if (!parent || !child) return;
+
+      const message = `子カテゴリ「${child.name}」を削除します。この子カテゴリのTodoも削除されます。`;
+      if (!window.confirm(message)) return;
+
+      state.parents = state.parents.map(item => {
+        if (item.id !== parentId) return item;
+        return { ...item, children: item.children.filter(childItem => childItem.id !== childId) };
+      });
+      state.todos = state.todos.filter(todo => todo.childId !== childId);
+
+      if (state.selectedParentId === parentId && state.selectedChildId === childId) {
+        const updatedParent = getParent(parentId);
+        state.selectedChildId = updatedParent?.children[0]?.id || "";
+      }
+      if (state.filterParentId === parentId && state.filterChildId === childId) {
+        state.filterChildId = "all";
+      }
+
+      ensureValidCategorySelections();
+      renderAll();
+    }
+
+    function addParent() {
+      const name = els.newParentName.value.trim();
+      if (!name) return;
+
+      const id = makeId("parent");
+      state.parents.push({ id, name, children: [] });
+      state.selectedParentId = id;
+      state.filterParentId = id;
+      state.filterChildId = "";
+      els.newParentName.value = "";
+      renderAll();
+    }
+
+    function addChild() {
+      const name = els.newChildName.value.trim();
+      if (!name) return;
+
+      const parentId = els.categoryParent.value;
+      const parent = getParent(parentId);
+      if (!parent) return;
+
+      const id = makeId("child");
+      parent.children.push({ id, name });
+      state.selectedParentId = parentId;
+      state.filterParentId = parentId;
+      state.filterChildId = id;
+      els.newChildName.value = "";
+      renderAll();
+    }
+
+    function toggleTodo(id) {
+      const todo = state.todos.find(item => item.id === id);
+      if (!todo) return;
+      todo.done = !todo.done;
+      renderAll();
+    }
+
+    function deleteTodo(id) {
+      state.todos = state.todos.filter(item => item.id !== id);
+      renderAll();
+    }
+
+
+
+
+    function updateEditFormVisibility() {
+      const isEvent = els.editKind.value === "event";
+      els.editDateLabel.textContent = isEvent ? "日程" : "締切日";
+      els.editDeadlineTimeField.classList.toggle("hidden-field", isEvent);
+      els.editStartTimeField.classList.toggle("hidden-field", !isEvent);
+      els.editEndTimeField.classList.toggle("hidden-field", !isEvent);
+      els.editImportanceField.classList.toggle("hidden-field", isEvent);
+      if (els.editCertaintyField) {
+        els.editCertaintyField.classList.toggle("hidden-field", !isEvent);
+      }
+    }
+
+    function openEditModal(id) {
+      const todo = state.todos.find(item => item.id === id);
+      if (!todo) return;
+
+      els.editTodoId.value = todo.id;
+      els.editKind.value = todo.kind || "todo";
+      updateEditFormVisibility();
+      els.editParent.value = todo.parentId;
+      renderSelects();
+      els.editParent.value = todo.parentId;
+      fillSelect(
+        els.editChild,
+        (getParent(todo.parentId)?.children || []).map(child => ({ value: child.id, label: child.name })),
+        todo.childId
+      );
+      els.editTitleInput.value = todo.title;
+      els.editDetail.value = todo.detail || "";
+      els.editDate.value = todo.date;
+      els.editDeadlineTime.value = todo.deadlineTime || "";
+      els.editStartTime.value = todo.startTime || "";
+      els.editEndTime.value = todo.endTime || "";
+      els.editImportance.value = todo.importance;
+      els.editCertainty.value = todo.certaintyId || "confirmed";
+      els.editMinutes.value = Number(todo.minutes) || 0;
+      els.editModal.classList.add("show");
+      els.editModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeEditModal() {
+      els.editModal.classList.remove("show");
+      els.editModal.setAttribute("aria-hidden", "true");
+    }
+
+    function saveEditTodo() {
+      const todo = state.todos.find(item => item.id === els.editTodoId.value);
+      if (!todo) return;
+
+      const title = els.editTitleInput.value.trim();
+      if (!title) return;
+
+      todo.kind = els.editKind.value || "todo";
+      todo.parentId = els.editParent.value;
+      todo.childId = els.editChild.value;
+      todo.title = title;
+      todo.detail = els.editDetail.value.trim();
+      todo.date = els.editDate.value || todayString();
+      todo.startTime = todo.kind === "event" ? (els.editStartTime.value || "") : "";
+      todo.endTime = todo.kind === "event" ? (els.editEndTime.value || "") : "";
+      todo.deadlineTime = todo.kind === "event" ? "" : (els.editDeadlineTime.value || "");
+      todo.importance = todo.kind === "event" ? "中" : els.editImportance.value;
+      todo.certaintyId = todo.kind === "event" ? (els.editCertainty.value || "confirmed") : "";
+      todo.minutes = Number(els.editMinutes.value) || 0;
+
+      closeEditModal();
+      renderAll();
+    }
+
+    function deleteEditTodo() {
+      const id = els.editTodoId.value;
+      if (!id) return;
+      state.todos = state.todos.filter(todo => todo.id !== id);
+      closeEditModal();
+      renderAll();
+    }
+
+    function updateVisualSetting(target) {
+      const kind = target.dataset.setting;
+      const id = target.dataset.id;
+      const date = target.dataset.date;
+      const day = target.dataset.day;
+      const period = target.dataset.period;
+      const parentId = target.dataset.parentId;
+      const childId = target.dataset.childId;
+      if (!kind || !id) return false;
+
+      if (kind === "importance-color") {
+        state.importanceColors[id] = safeColor(target.value, state.importanceColors[id]);
+        renderAll();
+        return true;
+      }
+
+      if (kind === "certainty-label") {
+        const option = state.certaintyOptions.find(item => item.id === id);
+        if (option) option.label = target.value.trim().slice(0, 12) || option.label;
+        renderAll();
+        return true;
+      }
+
+      return false;
+    }
+
+    function updateColorWhileInput(target) {
+      const kind = target.dataset.setting;
+      if (kind !== "importance-color") return false;
+      return updateVisualSetting(target);
+    }
+
+    function resetVisualSettings() {
+      state.importanceColors = clone(initialState.importanceColors);
+      state.certaintyOptions = clone(initialState.certaintyOptions);
+      state.classColorPresets = clone(initialState.classColorPresets);
+      renderAll();
+    }
+
+    function handleAction(event) {
+      const target = event.target.closest("[data-action]");
+      if (!target) return;
+
+      const action = target.dataset.action;
+      const id = target.dataset.id;
+      const date = target.dataset.date;
+      const day = target.dataset.day;
+      const period = target.dataset.period;
+      const parentId = target.dataset.parentId;
+      const childId = target.dataset.childId;
+
+      if (action === "toggle") toggleTodo(id);
+      if (action === "delete") deleteTodo(id);
+      if (action === "edit") openEditModal(id);
+      if (action === "select-day" && date) {
+        state.selectedDate = date;
+        state.view = "day";
+        renderAll();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      if (action === "edit-class" && id) {
+        state.view = "timetable";
+        renderAll();
+        openClassEditor(id);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      if (action === "edit-class-slot" && day && period) {
+        state.view = "timetable";
+        renderAll();
+        openClassSlot(Number(day), Number(period));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      if (action === "open-timetable" && id) {
+        state.view = "timetable";
+        renderAll();
+        openClassEditor(id);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      if (action === "delete-parent-category" && parentId) {
+        deleteParentCategory(parentId);
+      }
+      if (action === "delete-child-category" && parentId && childId) {
+        deleteChildCategory(parentId, childId);
+      }
+    }
+
+    function runSelfTests() {
+      console.assert(Array.isArray(state.parents), "parents should be an array");
+      console.assert(Array.isArray(state.todos), "todos should be an array");
+      console.assert(importanceRank("最高") > importanceRank("高"), "highest importance should outrank high");
+      console.assert(getDateRange("2026-04-25", 7).length === 7, "date range should show seven days");
+      console.assert(dateLabel("2026-04-25") === "4/25(土)", "date label should be valid");
+      console.assert(["matrix", "month", "day", "category", "completed", "add", "manage", "settings", "timetable", "data"].includes(state.view), "view should be valid");
+      console.assert(Array.isArray(state.certaintyOptions), "certainty options should exist");
+      console.assert(typeof state.importanceColors === "object", "importance colors should exist");
+    }
+
+    document.querySelectorAll("[data-view-button]").forEach(button => {
+      button.addEventListener("click", () => {
+        state.view = button.dataset.viewButton;
+        closeFabMenu();
+        closeGearMenu();
+        renderAll();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
+    document.querySelectorAll("[data-fab-view]").forEach(button => {
+      button.addEventListener("click", () => {
+        goFromFab(button.dataset.fabView, button.dataset.fabKind || "");
+      });
+    });
+
+    els.fabButton.addEventListener("click", toggleFabMenu);
+    els.gearButton.addEventListener("click", toggleGearMenu);
+    document.querySelectorAll("[data-gear-view]").forEach(button => {
+      button.addEventListener("click", () => {
+        goFromGear(button.dataset.gearView);
+      });
+    });
+    if (els.openFabHint) {
+      els.openFabHint.addEventListener("click", openFabMenu);
+    }
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".fab-wrap") && event.target !== els.openFabHint) {
+        closeFabMenu();
+      }
+      if (!event.target.closest(".gear-wrap")) {
+        closeGearMenu();
+      }
+    });
+
+    els.todoKind.addEventListener("change", () => {
+      updateTodoFormVisibility();
+    });
+
+    els.categoryParent.addEventListener("change", () => {
+      state.selectedParentId = els.categoryParent.value;
+      renderAll();
+    });
+
+    els.filterParent.addEventListener("change", () => {
+      state.filterParentId = els.filterParent.value;
+      state.filterChildId = getFirstChildId(state.filterParentId);
+      renderAll();
+    });
+
+    els.filterChild.addEventListener("change", () => {
+      state.filterChildId = els.filterChild.value;
+      renderAll();
+    });
+
+    els.selectedDate.addEventListener("change", () => {
+      state.selectedDate = els.selectedDate.value;
+      renderAll();
+    });
+
+    els.prevMonth.addEventListener("click", () => {
+      state.monthCursor = addMonths(state.monthCursor, -1);
+      renderAll();
+    });
+
+    els.nextMonth.addEventListener("click", () => {
+      state.monthCursor = addMonths(state.monthCursor, 1);
+      renderAll();
+    });
+
+    els.thisMonth.addEventListener("click", () => {
+      state.monthCursor = todayString();
+      renderAll();
+    });
+
+    els.addTodo.addEventListener("click", addTodo);
+    els.addParent.addEventListener("click", addParent);
+    els.addChild.addEventListener("click", addChild);
+    els.resetVisualSettings.addEventListener("click", resetVisualSettings);
+    els.exportData.addEventListener("click", exportData);
+    els.importData.addEventListener("click", importData);
+    els.classColorPresetGrid.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-class-color-key]");
+      if (!button) return;
+      renderClassColorPresetGrid(button.dataset.classColorKey);
+    });
+    document.body.addEventListener("pointerdown", (event) => {
+      const target = event.target.closest("[data-preset-longpress]");
+      if (target) startPresetLongPress(target);
+    });
+    document.body.addEventListener("pointerup", cancelPresetLongPress);
+    document.body.addEventListener("pointerleave", cancelPresetLongPress);
+    els.classPresetColorPicker.addEventListener("input", () => {
+      els.classPresetColorSample.style.background = els.classPresetColorPicker.value;
+    });
+    els.cancelClassPresetColor.addEventListener("click", closeClassPresetColorSheet);
+    els.saveClassPresetColor.addEventListener("click", saveClassPresetColorFromSheet);
+    els.classColorSheet.addEventListener("click", (event) => {
+      if (event.target === els.classColorSheet) closeClassPresetColorSheet();
+    });
+    els.saveClass.addEventListener("click", saveClass);
+    els.deleteClass.addEventListener("click", deleteClass);
+    els.clearSelectedClass.addEventListener("click", () => {
+      clearClassEditor();
+      closeClassEditor();
+    });
+    els.closeClassEditor.addEventListener("click", closeClassEditor);
+    els.classEditorPanel.addEventListener("click", (event) => {
+      if (event.target === els.classEditorPanel) closeClassEditor();
+    });
+    els.classPeriod.addEventListener("change", () => {
+      const [start, end] = defaultPeriodTimes(Number(els.classPeriod.value));
+      if (!els.classStartTime.value) els.classStartTime.value = start;
+      if (!els.classEndTime.value) els.classEndTime.value = end;
+    });
+    els.closeEditModal.addEventListener("click", closeEditModal);
+    els.saveEditTodo.addEventListener("click", saveEditTodo);
+    els.deleteEditTodo.addEventListener("click", deleteEditTodo);
+    els.editModal.addEventListener("click", (event) => {
+      if (event.target === els.editModal) closeEditModal();
+    });
+    els.editKind.addEventListener("change", updateEditFormVisibility);
+
+    els.editParent.addEventListener("change", () => {
+      const firstChildId = getFirstChildId(els.editParent.value);
+      fillSelect(
+        els.editChild,
+        (getParent(els.editParent.value)?.children || []).map(child => ({ value: child.id, label: child.name })),
+        firstChildId
+      );
+    });
+    document.body.addEventListener("input", (event) => updateColorWhileInput(event.target));
+    document.body.addEventListener("change", (event) => {
+      if (!updateVisualSetting(event.target)) handleAction(event);
+    });
+    document.body.addEventListener("click", (event) => {
+      if (event.target.matches('input[type="checkbox"][data-action]')) return;
+      handleAction(event);
+    });
+
+    els.todoDate.value = todayString();
+    els.selectedDate.value = state.selectedDate;
+
+    setInterval(() => {
+      const before = state.lastKnownToday;
+      normalizeDateChange();
+      if (before !== state.lastKnownToday) {
+        els.todoDate.value = todayString();
+        renderAll();
+      }
+    }, 60 * 1000);
+
+    runSelfTests();
+    clearClassEditor();
+    renderAll();
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
+
+</body>
+</html>
