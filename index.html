@@ -1922,13 +1922,24 @@
         <section class="card">
           <div class="view-head">
             <div>
-              <h2>東大時間割</h2>
+              <h2>時間割</h2>
               <p class="desc">曜日と時限ごとに授業を入力できます。入力した授業は日別の24時間表示にも出ます。</p>
             </div>
             <div class="ut-toolbar">
               <button id="clearSelectedClass" class="secondary">選択を解除</button>
             </div>
           </div>
+
+          <details class="settings-box" style="margin-bottom:12px;">
+            <summary>時間割の設定</summary>
+            <div class="settings-body">
+              <label>
+                時限数
+                <input id="periodCount" type="number" min="1" max="10" step="1" />
+              </label>
+              <div id="periodTimeSettings"></div>
+            </div>
+          </details>
 
           <div class="timetable-wrap">
             <div id="timetableGrid" class="timetable-grid"></div>
@@ -2238,8 +2249,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v53";
-    const OLD_KEYS = ["todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v54";
+    const OLD_KEYS = ["todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2307,8 +2318,8 @@
       selectedDate: todayString(),
       selectedParentId: "class",
       selectedChildId: "info",
-      filterParentId: "class",
-      filterChildId: "info",
+      filterParentId: "all",
+      filterChildId: "all",
       monthCursor: todayString(),
       lastKnownToday: todayString(),
       classes: [],
@@ -2326,6 +2337,17 @@
         uncertain: "#fef3c7"
       },
       showClassesInTimeline: true,
+      timetableSettings: {
+        periodCount: 6,
+        periods: {
+          1: { start: "08:30", end: "10:15" },
+          2: { start: "10:25", end: "12:10" },
+          3: { start: "13:00", end: "14:45" },
+          4: { start: "14:55", end: "16:40" },
+          5: { start: "16:50", end: "18:35" },
+          6: { start: "18:45", end: "20:30" }
+        }
+      },
       weekSortMode: "manual",
       weekOrderChildIds: [],
       weekOrderParentIds: [],
@@ -2415,6 +2437,8 @@
       importData: document.getElementById("importData"),
       dataStatus: document.getElementById("dataStatus"),
       timetableGrid: document.getElementById("timetableGrid"),
+      periodCount: document.getElementById("periodCount"),
+      periodTimeSettings: document.getElementById("periodTimeSettings"),
       clearSelectedClass: document.getElementById("clearSelectedClass"),
       classEditorPanel: document.getElementById("classEditorPanel"),
       closeClassEditor: document.getElementById("closeClassEditor"),
@@ -2556,21 +2580,30 @@
       return ["日", "月", "火", "水", "木", "金", "土"][Number(index)] || "";
     }
 
+    function normalizeTimetableSettings(settings) {
+      const defaults = clone(initialState.timetableSettings);
+      const rawCount = Number(settings?.periodCount ?? defaults.periodCount);
+      const periodCount = Math.max(1, Math.min(10, Number.isFinite(rawCount) ? Math.round(rawCount) : defaults.periodCount));
+      const periods = {};
+      for (let i = 1; i <= periodCount; i += 1) {
+        const saved = settings?.periods?.[i] || settings?.periods?.[String(i)] || {};
+        const fallback = defaults.periods[i] || { start: "", end: "" };
+        periods[i] = {
+          start: /^\d{2}:\d{2}$/.test(saved.start || "") ? saved.start : fallback.start,
+          end: /^\d{2}:\d{2}$/.test(saved.end || "") ? saved.end : fallback.end
+        };
+      }
+      return { periodCount, periods };
+    }
+
     function defaultPeriodTimes(period) {
-      const table = {
-        1: ["08:30", "10:15"],
-        2: ["10:25", "12:10"],
-        3: ["13:00", "14:45"],
-        4: ["14:55", "16:40"],
-        5: ["16:50", "18:35"],
-        6: ["18:45", "20:30"]
-      };
-      return table[Number(period)] || ["", ""];
+      const data = state.timetableSettings?.periods?.[Number(period)];
+      return [data?.start || "", data?.end || ""];
     }
 
     function periodTimeLabel(period) {
       const [start, end] = defaultPeriodTimes(period);
-      return `${period}<br>${start}<br>〜<br>${end}`;
+      return `${period}<br>${start || "--:--"}<br>〜<br>${end || "--:--"}`;
     }
 
     function classForSlot(day, period) {
@@ -2701,6 +2734,7 @@
         loaded.certaintyColors = { ...clone(initialState.certaintyColors), ...(parsed.certaintyColors || {}) };
         loaded.certaintyOptions = mergeCertaintyOptions(parsed.certaintyOptions);
         loaded.showClassesInTimeline = typeof parsed.showClassesInTimeline === "boolean" ? parsed.showClassesInTimeline : true;
+        loaded.timetableSettings = normalizeTimetableSettings(parsed.timetableSettings);
         loaded.weekSortMode = ["manual", "parent"].includes(parsed.weekSortMode) ? parsed.weekSortMode : "manual";
         loaded.weekOrderChildIds = Array.isArray(parsed.weekOrderChildIds) ? parsed.weekOrderChildIds : [];
         loaded.weekOrderParentIds = Array.isArray(parsed.weekOrderParentIds) ? parsed.weekOrderParentIds : [];
@@ -2932,8 +2966,8 @@
       ];
       fillSelect(els.filterParent, filterParentOptions, state.filterParentId || "all");
 
-      const isAllFilterParents = els.filterParent.value === "all";
-      const filterChildren = isAllFilterParents ? [] : (getParent(els.filterParent.value)?.children || []);
+      const isAllParents = els.filterParent.value === "all";
+      const filterChildren = isAllParents ? [] : (getParent(els.filterParent.value)?.children || []);
       const filterChildOptions = [
         { value: "all", label: "すべて" },
         ...filterChildren.map(child => ({ value: child.id, label: child.name }))
@@ -2943,7 +2977,7 @@
         filterChildOptions,
         state.filterChildId || "all"
       );
-      els.filterChild.disabled = isAllFilterParents;
+      els.filterChild.disabled = false;
 
       fillSelect(
         els.todoCertainty,
@@ -3251,33 +3285,23 @@
     }
 
     function renderCategory() {
-      if (!state.filterParentId) {
-        state.filterParentId = "all";
-      }
-      if (!state.filterChildId) {
-        state.filterChildId = "all";
-      }
-
       const isAllParents = state.filterParentId === "all";
-      const currentParent = isAllParents ? null : getParent(state.filterParentId);
       const isAllChildren = state.filterChildId === "all";
 
-      const selected = flatCategories().find(
-        category => category.parentId === state.filterParentId && category.childId === state.filterChildId
-      );
+      const currentParent = isAllParents ? null : getParent(state.filterParentId);
 
-      if (isAllParents) {
-        els.selectedCategoryLabel.textContent = "すべて / すべて";
-      } else {
-        els.selectedCategoryLabel.textContent = isAllChildren
+      els.selectedCategoryLabel.textContent = isAllParents
+        ? "すべて / すべて"
+        : isAllChildren
           ? (currentParent ? currentParent.name + " / すべて" : "未選択")
-          : (selected?.label || "未選択");
-      }
+          : (flatCategories().find(
+              category => category.parentId === state.filterParentId && category.childId === state.filterChildId
+            )?.label || "未選択");
 
       const entries = state.todos
         .filter(todo => {
           if (!isAllParents && todo.parentId !== state.filterParentId) return false;
-          if (!isAllParents && !isAllChildren && todo.childId !== state.filterChildId) return false;
+          if (!isAllChildren && todo.childId !== state.filterChildId) return false;
           return true;
         })
         .sort((a, b) => a.date.localeCompare(b.date))
@@ -3396,9 +3420,55 @@
       renderAll();
     }
 
+    function setPeriodCount(value) {
+      const count = Math.max(1, Math.min(10, Math.round(Number(value) || 6)));
+      const current = state.timetableSettings || normalizeTimetableSettings();
+      const nextPeriods = {};
+      for (let i = 1; i <= count; i += 1) {
+        const saved = current.periods?.[i];
+        const fallback = initialState.timetableSettings.periods[i] || { start: "", end: "" };
+        nextPeriods[i] = { start: saved?.start || fallback.start, end: saved?.end || fallback.end };
+      }
+      state.timetableSettings = { periodCount: count, periods: nextPeriods };
+      state.classes = state.classes.filter(item => Number(item.period) <= count);
+      renderAll();
+    }
+
+    function updatePeriodTime(period, field, value) {
+      if (!state.timetableSettings.periods[period]) state.timetableSettings.periods[period] = { start: "", end: "" };
+      state.timetableSettings.periods[period][field] = value;
+      state.classes = state.classes.map(item => {
+        if (Number(item.period) !== Number(period)) return item;
+        return { ...item, startTime: field === "start" ? value : item.startTime, endTime: field === "end" ? value : item.endTime };
+      });
+      renderAll();
+    }
+
+    function renderTimetableSettings() {
+      els.periodCount.value = state.timetableSettings.periodCount;
+      const selectedClassPeriod = Number(els.classPeriod.value || 1);
+      els.classPeriod.innerHTML = Array.from({ length: state.timetableSettings.periodCount }, (_, index) => {
+        const period = index + 1;
+        return `<option value="${period}">${period}限</option>`;
+      }).join("");
+      els.classPeriod.value = String(Math.min(selectedClassPeriod, state.timetableSettings.periodCount));
+
+      els.periodTimeSettings.innerHTML = Array.from({ length: state.timetableSettings.periodCount }, (_, index) => {
+        const period = index + 1;
+        const [start, end] = defaultPeriodTimes(period);
+        return `
+          <div class="two" style="margin-top:8px;">
+            <label>${period}限 開始<input type="time" value="${escapeHtml(start)}" data-period-time="start" data-period="${period}" /></label>
+            <label>${period}限 終了<input type="time" value="${escapeHtml(end)}" data-period-time="end" data-period="${period}" /></label>
+          </div>
+        `;
+      }).join("");
+    }
+
     function renderTimetable() {
+      renderTimetableSettings();
       const days = [1, 2, 3, 4, 5];
-      const periods = [1, 2, 3, 4, 5, 6];
+      const periods = Array.from({ length: state.timetableSettings.periodCount }, (_, index) => index + 1);
       const dayHeads = ["時限", "月", "火", "水", "木", "金"];
 
       const heads = dayHeads.map(text => `<div class="tt-head">${text}</div>`).join("");
@@ -3817,7 +3887,7 @@
       const firstParent = state.parents[0];
       if (!firstParent) {
         state.selectedParentId = "";
-        state.filterParentId = "";
+        state.filterParentId = "all";
         state.filterChildId = "all";
         state.selectedChildId = "";
         return;
@@ -3886,8 +3956,8 @@
       const id = makeId("parent");
       state.parents.push({ id, name, children: [] });
       state.selectedParentId = id;
-      state.filterParentId = id;
-      state.filterChildId = "";
+      state.filterParentId = "all";
+      state.filterChildId = "all";
       els.newParentName.value = "";
       renderAll();
     }
@@ -3903,8 +3973,8 @@
       const id = makeId("child");
       parent.children.push({ id, name });
       state.selectedParentId = parentId;
-      state.filterParentId = parentId;
-      state.filterChildId = id;
+      state.filterParentId = "all";
+      state.filterChildId = "all";
       els.newChildName.value = "";
       renderAll();
     }
@@ -4113,7 +4183,7 @@
     function runSelfTests() {
       console.assert(Array.isArray(state.parents), "parents should be an array");
       console.assert(Array.isArray(state.todos), "todos should be an array");
-      console.assert(importanceRank("最高") > importanceRank("高"), "highest importance should outrank high");
+      console.assert(importanceRank("高") > importanceRank("中"), "high importance should outrank middle");
       console.assert(getDateRange("2026-04-25", 7).length === 7, "date range should show seven days");
       console.assert(dateLabel("2026-04-25") === "4/25(土)", "date label should be valid");
       console.assert(["matrix", "month", "day", "category", "completed", "add", "manage", "settings", "timetable", "data"].includes(state.view), "view should be valid");
@@ -4172,7 +4242,7 @@
     });
 
     els.filterParent.addEventListener("change", () => {
-      state.filterParentId = els.filterParent.value || "all";
+      state.filterParentId = els.filterParent.value;
       state.filterChildId = "all";
       renderAll();
     });
@@ -4262,8 +4332,18 @@
     });
     els.classPeriod.addEventListener("change", () => {
       const [start, end] = defaultPeriodTimes(Number(els.classPeriod.value));
-      if (!els.classStartTime.value) els.classStartTime.value = start;
-      if (!els.classEndTime.value) els.classEndTime.value = end;
+      els.classStartTime.value = start;
+      els.classEndTime.value = end;
+    });
+
+    els.periodCount.addEventListener("change", () => {
+      setPeriodCount(els.periodCount.value);
+    });
+
+    els.periodTimeSettings.addEventListener("change", (event) => {
+      const target = event.target.closest("[data-period-time]");
+      if (!target) return;
+      updatePeriodTime(Number(target.dataset.period), target.dataset.periodTime, target.value);
     });
     els.closeEditModal.addEventListener("click", closeEditModal);
     els.saveEditTodo.addEventListener("click", saveEditTodo);
