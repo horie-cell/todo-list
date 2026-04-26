@@ -2207,8 +2207,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v47";
-    const OLD_KEYS = ["todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v48";
+    const OLD_KEYS = ["todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -3015,7 +3015,7 @@
         return `
           <article class="todo-card ${isCarryOver ? "overdue" : ""}" style="${visualStyleForTodo(todo, isCarryOver)}">
             <div class="todo-left">
-              <input type="checkbox" data-action="toggle" data-id="${escapeHtml(todo.id)}" ${todo.done ? "checked" : ""} />
+              ${todo.kind !== "event" ? `<input type="checkbox" data-action="toggle" data-id="${escapeHtml(todo.id)}" ${todo.done ? "checked" : ""} />` : ""}
               <div class="todo-main task-clickable" data-action="edit" data-id="${escapeHtml(todo.id)}">
                 <p class="todo-title ${isDone ? "done" : ""} ${isCarryOver ? "overdue" : ""}">${escapeHtml(todo.title)}</p>
                 <p class="todo-detail">${escapeHtml(todo.detail || "詳細なし")}</p>
@@ -3024,7 +3024,7 @@
                   <span class="badge">${escapeHtml(category?.label || "カテゴリ不明")}</span>
                   <span class="badge">${escapeHtml(isCarryOver ? "元の締切: " + deadlineText(todo) : (todo.kind === "event" ? dateLabel(todo.date) : "締切: " + deadlineText(todo)))}</span>
                   ${todo.kind === "event" ? `<span class="badge">${escapeHtml(timeText(todo))}</span>${todo.location ? `<span class="badge">${escapeHtml(todo.location)}</span>` : ""}` : ""}
-                  <span class="importance-badge" style="background:${importanceColor(isCarryOver ? "高" : todo.importance)}">重要度: ${isCarryOver ? "高" : escapeHtml(todo.importance)}</span>
+                  ${todo.kind !== "event" ? `<span class="importance-badge" style="background:${importanceColor(isCarryOver ? "高" : todo.importance)}">重要度: ${isCarryOver ? "高" : escapeHtml(todo.importance)}</span>` : ""}
                   ${todo.kind === "event" || isCarryOver ? `<span class="certainty-badge" style="${todo.kind === "event" ? "border-color:" + certaintyColor(todo.certaintyId) + "; background:" + certaintyColor(todo.certaintyId) : ""}">${escapeHtml(isCarryOver ? "期限切れ" : certaintyLabel(todo.certaintyId))}</span>` : ""}
                   ${todo.kind !== "event" ? `<span class="badge">${Number(todo.minutes) || 0}分</span>` : ""}
                 </div>
@@ -3161,7 +3161,7 @@
         .sort((a, b) => a.date.localeCompare(b.date))
         .map(todo => ({ todo, isCarryOver: false }));
 
-      els.categoryTodos.innerHTML = todoListHtml(entries, "このカテゴリのTodoはありません。");
+      els.categoryTodos.innerHTML = todoListHtml(entries, "このカテゴリの項目はありません。");
     }
 
 
