@@ -2308,8 +2308,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v59";
-    const OLD_KEYS = ["todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v61";
+    const OLD_KEYS = ["todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2970,6 +2970,14 @@
       return safeColor(state.importanceColors[value], "#e2e8f0");
     }
 
+    function monthStyleForEntry(entry) {
+      const todo = entry.todo;
+      const color = todo.kind === "event"
+        ? certaintyColor(todo.certaintyId)
+        : importanceColor(entry.isCarryOver ? "高" : todo.importance);
+      return `border:1px solid ${color}; background:${color}; color:#0f172a;`;
+    }
+
     function visualStyleForTodo(todo, isCarryOver) {
       const level = isCarryOver ? "高" : todo.importance;
       const border = importanceColor(level);
@@ -3423,7 +3431,7 @@
           <div class="month-cell ${outside ? "outside" : ""} ${today ? "today" : ""}" data-action="select-day" data-date="${escapeHtml(date)}">
             <div class="month-day">${d.getDate()}</div>
             ${entries.map(entry => `
-              <div class="month-mini task-clickable ${entry.isCarryOver ? "overdue" : ""}" data-action="edit" data-id="${escapeHtml(entry.todo.id)}" style="${entry.isCarryOver ? "" : "border:1px solid " + importanceColor(entry.todo.importance)}">
+              <div class="month-mini task-clickable ${entry.isCarryOver ? "overdue" : ""}" data-action="edit" data-id="${escapeHtml(entry.todo.id)}" style="${monthStyleForEntry(entry)}">
                 <span class="month-mini-inner">${escapeHtml(entry.todo.title)}</span>
               </div>
             `).join("")}
