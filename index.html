@@ -993,6 +993,65 @@
       line-height: 1;
     }
 
+
+    .week-controls {
+      display: flex;
+      gap: 8px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin: 10px 0 12px;
+    }
+
+    .week-controls label {
+      min-width: 170px;
+      flex: 1 1 170px;
+    }
+
+    .week-item-cell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 4px;
+      align-items: start;
+    }
+
+    .week-move-buttons {
+      display: grid;
+      gap: 3px;
+    }
+
+    .week-move-buttons button {
+      border: 1px solid var(--line2);
+      background: white;
+      color: #475569;
+      border-radius: 7px;
+      width: 22px;
+      height: 20px;
+      padding: 0;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .week-move-buttons button:disabled {
+      color: #cbd5e1;
+      background: #f8fafc;
+      cursor: not-allowed;
+    }
+
+    .parent-group-row td {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 900;
+      height: auto;
+      padding: 7px 8px;
+      border-top: 2px solid var(--line2);
+    }
+
+    .parent-group-row td:first-child {
+      position: static;
+      width: auto;
+      max-width: none;
+    }
+
     @media (max-width: 720px) {
       .day-nav {
         width: 100%;
@@ -1630,6 +1689,16 @@
             <button class="secondary" id="openFabHint">右下＋で追加、右上⚙で管理</button>
           </div>
         </div>
+        <div class="week-controls">
+          <label>
+            週の並び
+            <select id="weekSortMode">
+              <option value="manual">手動並び</option>
+              <option value="parent">親カテゴリ別</option>
+            </select>
+          </label>
+          <button id="resetWeekOrder" class="secondary">並びを初期化</button>
+        </div>
         <div id="matrixTable" class="table-wrap"></div>
       </section>
 
@@ -2104,8 +2173,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v39";
-    const OLD_KEYS = ["todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v40";
+    const OLD_KEYS = ["todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2192,6 +2261,8 @@
         uncertain: "#fef3c7"
       },
       showClassesInTimeline: true,
+      weekSortMode: "manual",
+      weekOrderChildIds: [],
       categoryColors: {
         kyudo: "#bbf7d0",
         koto: "#fbcfe8",
@@ -2246,6 +2317,8 @@
       addChild: document.getElementById("addChild"),
       categoryList: document.getElementById("categoryList"),
       matrixTable: document.getElementById("matrixTable"),
+      weekSortMode: document.getElementById("weekSortMode"),
+      resetWeekOrder: document.getElementById("resetWeekOrder"),
       monthTitle: document.getElementById("monthTitle"),
       monthCalendar: document.getElementById("monthCalendar"),
       prevMonth: document.getElementById("prevMonth"),
@@ -2554,6 +2627,8 @@
         loaded.certaintyColors = { ...clone(initialState.certaintyColors), ...(parsed.certaintyColors || {}) };
         loaded.certaintyOptions = mergeCertaintyOptions(parsed.certaintyOptions);
         loaded.showClassesInTimeline = typeof parsed.showClassesInTimeline === "boolean" ? parsed.showClassesInTimeline : true;
+        loaded.weekSortMode = ["manual", "parent"].includes(parsed.weekSortMode) ? parsed.weekSortMode : "manual";
+        loaded.weekOrderChildIds = Array.isArray(parsed.weekOrderChildIds) ? parsed.weekOrderChildIds : [];
         loaded.todos = loaded.todos.map(todo => {
           const kind = todo.kind || "todo";
           const certaintyId = kind === "event"
@@ -2594,6 +2669,45 @@
           label: parent.name + " / " + child.name
         }))
       );
+    }
+
+    function normalizeWeekOrder() {
+      const childIds = flatCategories().map(category => category.childId);
+      const known = state.weekOrderChildIds.filter(id => childIds.includes(id));
+      const missing = childIds.filter(id => !known.includes(id));
+      state.weekOrderChildIds = [...known, ...missing];
+    }
+
+    function weekCategories() {
+      const categories = flatCategories();
+      normalizeWeekOrder();
+
+      if (state.weekSortMode === "parent") {
+        return categories.map(category => ({ ...category, isGrouped: true }));
+      }
+
+      const indexMap = new Map(state.weekOrderChildIds.map((id, index) => [id, index]));
+      return [...categories].sort((a, b) => {
+        return (indexMap.get(a.childId) ?? 9999) - (indexMap.get(b.childId) ?? 9999);
+      });
+    }
+
+    function moveWeekCategory(childId, direction) {
+      normalizeWeekOrder();
+      const index = state.weekOrderChildIds.indexOf(childId);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= state.weekOrderChildIds.length) return;
+
+      const copy = [...state.weekOrderChildIds];
+      [copy[index], copy[nextIndex]] = [copy[nextIndex], copy[index]];
+      state.weekOrderChildIds = copy;
+      state.weekSortMode = "manual";
+      renderAll();
+    }
+
+    function resetWeekOrder() {
+      state.weekOrderChildIds = flatCategories().map(category => category.childId);
+      renderAll();
     }
 
     function getParent(id) {
@@ -2755,7 +2869,8 @@
 
     function renderMatrix() {
       const dates = getDateRange(todayString(), 7);
-      const categories = flatCategories();
+      const categories = weekCategories();
+      els.weekSortMode.value = state.weekSortMode;
 
       const header = `
         <thead>
@@ -2774,7 +2889,13 @@
         </thead>
       `;
 
-      const body = categories.map(category => {
+      let lastParentId = "";
+      const body = categories.map((category, index) => {
+        const groupRow = state.weekSortMode === "parent" && category.parentId !== lastParentId
+          ? `<tr class="parent-group-row"><td colspan="${dates.length + 1}">${escapeHtml(category.parentName)}</td></tr>`
+          : "";
+        lastParentId = category.parentId;
+
         const cells = dates.map(date => {
           const cellTodos = effectiveTodosForDate(date)
             .filter(entry => entry.todo.kind !== "event" && entry.todo.childId === category.childId);
@@ -2786,11 +2907,24 @@
           `;
         }).join("");
 
+        const moveButtons = state.weekSortMode === "manual"
+          ? `<div class="week-move-buttons">
+              <button data-action="move-week-category" data-id="${escapeHtml(category.childId)}" data-direction="-1" ${index === 0 ? "disabled" : ""}>↑</button>
+              <button data-action="move-week-category" data-id="${escapeHtml(category.childId)}" data-direction="1" ${index === categories.length - 1 ? "disabled" : ""}>↓</button>
+            </div>`
+          : "";
+
         return `
+          ${groupRow}
           <tr>
             <td>
-              ${escapeHtml(category.childName)}
-              <div class="parent-name">${escapeHtml(category.parentName)}</div>
+              <div class="week-item-cell">
+                <div>
+                  ${escapeHtml(category.childName)}
+                  <div class="parent-name">${escapeHtml(category.parentName)}</div>
+                </div>
+                ${moveButtons}
+              </div>
             </td>
             ${cells}
           </tr>
@@ -3739,6 +3873,9 @@
         state.showClassesInTimeline = !state.showClassesInTimeline;
         renderAll();
       }
+      if (action === "move-week-category" && id) {
+        moveWeekCategory(id, Number(target.dataset.direction) || 0);
+      }
     }
 
     function runSelfTests() {
@@ -3806,6 +3943,13 @@
       state.filterChildId = els.filterChild.value;
       renderAll();
     });
+
+    els.weekSortMode.addEventListener("change", () => {
+      state.weekSortMode = els.weekSortMode.value;
+      renderAll();
+    });
+
+    els.resetWeekOrder.addEventListener("click", resetWeekOrder);
 
     els.selectedDate.addEventListener("change", () => {
       state.selectedDate = els.selectedDate.value;
