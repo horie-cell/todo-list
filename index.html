@@ -569,6 +569,31 @@
       background: var(--danger-soft);
     }
 
+    .copy-event {
+      border: 1px solid var(--line2);
+      background: white;
+      color: #475569;
+      padding: 6px 8px;
+      border-radius: 9px;
+      align-self: start;
+      white-space: nowrap;
+      flex: 0 0 auto;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .copy-event:hover {
+      background: var(--soft);
+      color: var(--text);
+    }
+
+    .card-actions {
+      display: grid;
+      gap: 6px;
+      align-self: start;
+      flex: 0 0 auto;
+    }
+
     .empty {
       border: 1px dashed var(--line2);
       border-radius: 16px;
@@ -894,6 +919,23 @@
       flex: 0 0 auto;
     }
 
+    .category-edit {
+      border: 1px solid var(--line2);
+      background: white;
+      color: #475569;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    .category-head-actions {
+      display: inline-flex;
+      gap: 5px;
+      flex: 0 0 auto;
+    }
+
     .chip-with-delete {
       display: inline-flex;
       align-items: center;
@@ -907,10 +949,8 @@
       word-break: break-word;
     }
 
-    .chip-delete {
+    .chip-delete, .chip-edit {
       border: 0;
-      background: #fee2e2;
-      color: #b91c1c;
       border-radius: 999px;
       width: 18px;
       height: 18px;
@@ -921,6 +961,16 @@
       place-items: center;
       padding: 0;
       flex: 0 0 auto;
+    }
+
+    .chip-delete {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .chip-edit {
+      background: var(--soft);
+      color: #475569;
     }
 
 
@@ -2242,6 +2292,7 @@
 
         <div class="actions">
           <button id="saveEditTodo" class="primary">保存</button>
+          <button id="copyEditEvent" class="secondary">予定をコピー</button>
           <button id="deleteEditTodo" class="secondary">削除</button>
         </div>
       </div>
@@ -2249,8 +2300,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v54";
-    const OLD_KEYS = ["todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v56";
+    const OLD_KEYS = ["todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2492,6 +2543,7 @@
       editCertainty: document.getElementById("editCertainty"),
       editMinutes: document.getElementById("editMinutes"),
       saveEditTodo: document.getElementById("saveEditTodo"),
+      copyEditEvent: document.getElementById("copyEditEvent"),
       deleteEditTodo: document.getElementById("deleteEditTodo")
     };
 
@@ -3021,7 +3073,8 @@
         const children = parent.children.length
           ? parent.children.map(child => `
               <span class="chip-with-delete">
-                ${escapeHtml(child.name)}
+                <span>${escapeHtml(child.name)}</span>
+                <button class="chip-edit" data-action="edit-child-category" data-parent-id="${escapeHtml(parent.id)}" data-child-id="${escapeHtml(child.id)}" title="子カテゴリ名を編集">✎</button>
                 <button class="chip-delete" data-action="delete-child-category" data-parent-id="${escapeHtml(parent.id)}" data-child-id="${escapeHtml(child.id)}" title="子カテゴリを削除">×</button>
               </span>
             `).join("")
@@ -3031,7 +3084,10 @@
           <div class="category-box">
             <div class="category-head">
               <p>${escapeHtml(parent.name)}</p>
-              <button class="category-delete" data-action="delete-parent-category" data-parent-id="${escapeHtml(parent.id)}">削除</button>
+              <div class="category-head-actions">
+                <button class="category-edit" data-action="edit-parent-category" data-parent-id="${escapeHtml(parent.id)}">名前変更</button>
+                <button class="category-delete" data-action="delete-parent-category" data-parent-id="${escapeHtml(parent.id)}">削除</button>
+              </div>
             </div>
             <div class="chips">${children}</div>
           </div>
@@ -3172,7 +3228,10 @@
                 </div>
               </div>
             </div>
-            <button class="delete" data-action="delete" data-id="${escapeHtml(todo.id)}">削除</button>
+            <div class="card-actions">
+              ${todo.kind === "event" ? `<button class="copy-event" data-action="copy-event" data-id="${escapeHtml(todo.id)}">コピー</button>` : ""}
+              <button class="delete" data-action="delete" data-id="${escapeHtml(todo.id)}">削除</button>
+            </div>
           </article>
         `;
       }).join("");
@@ -3198,8 +3257,8 @@
 
       const untimedEventHtml = untimedEvents.length
         ? `<div class="all-day-box"><h3>時刻なしの予定</h3>${untimedEvents.map(todo => `
-            <article class="todo-card" data-action="edit" data-id="${escapeHtml(todo.id)}" style="${visualStyleForTodo(todo, false)}">
-              <div class="todo-main">
+            <article class="todo-card" style="${visualStyleForTodo(todo, false)}">
+              <div class="todo-main task-clickable" data-action="edit" data-id="${escapeHtml(todo.id)}">
                 <p class="todo-title">${escapeHtml(todo.title)}</p>
                 <p class="todo-detail">${escapeHtml(todo.detail || "詳細なし")}</p>
                 <div class="todo-meta">
@@ -3208,6 +3267,10 @@
                   ${todo.location ? `<span class="badge">${escapeHtml(todo.location)}</span>` : ""}
                   <span class="certainty-badge">${escapeHtml(certaintyLabel(todo.certaintyId))}</span>
                 </div>
+              </div>
+              <div class="card-actions">
+                <button class="copy-event" data-action="copy-event" data-id="${escapeHtml(todo.id)}">コピー</button>
+                <button class="delete" data-action="delete" data-id="${escapeHtml(todo.id)}">削除</button>
               </div>
             </article>
           `).join("")}</div>`
@@ -3908,6 +3971,41 @@
       }
     }
 
+    function editParentCategory(parentId) {
+      const parent = getParent(parentId);
+      if (!parent) return;
+
+      const inputName = window.prompt("新しい親カテゴリ名を入力してください。", parent.name);
+      if (inputName === null) return;
+
+      const newName = inputName.trim();
+      if (!newName) {
+        window.alert("カテゴリ名は空にできません。");
+        return;
+      }
+
+      parent.name = newName;
+      renderAll();
+    }
+
+    function editChildCategory(parentId, childId) {
+      const parent = getParent(parentId);
+      const child = parent?.children.find(item => item.id === childId);
+      if (!parent || !child) return;
+
+      const inputName = window.prompt("新しい子カテゴリ名を入力してください。", child.name);
+      if (inputName === null) return;
+
+      const newName = inputName.trim();
+      if (!newName) {
+        window.alert("カテゴリ名は空にできません。");
+        return;
+      }
+
+      child.name = newName;
+      renderAll();
+    }
+
     function deleteParentCategory(parentId) {
       const parent = getParent(parentId);
       if (!parent) return;
@@ -3994,6 +4092,35 @@
 
 
 
+    function copyEvent(id) {
+      const source = state.todos.find(item => item.id === id && item.kind === "event");
+      if (!source) return;
+
+      const suggestedDate = dateOffset(source.date || todayString(), 1);
+      const inputDate = window.prompt("コピー先の日付を YYYY-MM-DD で入力してください。", suggestedDate);
+      if (inputDate === null) return;
+
+      const newDate = inputDate.trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate) || Number.isNaN(toDate(newDate).getTime())) {
+        window.alert("日付は YYYY-MM-DD の形式で入力してください。");
+        return;
+      }
+
+      const copied = {
+        ...source,
+        id: makeId("todo"),
+        date: newDate,
+        done: false
+      };
+
+      state.todos.push(copied);
+      closeEditModal();
+      state.selectedDate = newDate;
+      state.view = "day";
+      renderAll();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
     function updateEditFormVisibility() {
       const isEvent = els.editKind.value === "event";
       els.editDateLabel.textContent = isEvent ? "日程" : "締切日";
@@ -4004,6 +4131,9 @@
       els.editImportanceField.classList.toggle("hidden-field", isEvent);
       if (els.editCertaintyField) {
         els.editCertaintyField.classList.toggle("hidden-field", !isEvent);
+      }
+      if (els.copyEditEvent) {
+        els.copyEditEvent.classList.toggle("hidden-field", !isEvent);
       }
     }
 
@@ -4135,6 +4265,7 @@
       if (action === "toggle") toggleTodo(id);
       if (action === "delete") deleteTodo(id);
       if (action === "edit") openEditModal(id);
+      if (action === "copy-event") copyEvent(id);
       if (action === "select-day" && date) {
         state.selectedDate = date;
         state.view = "day";
@@ -4158,6 +4289,12 @@
         renderAll();
         openClassEditor(id);
         window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      if (action === "edit-parent-category" && parentId) {
+        editParentCategory(parentId);
+      }
+      if (action === "edit-child-category" && parentId && childId) {
+        editChildCategory(parentId, childId);
       }
       if (action === "delete-parent-category" && parentId) {
         deleteParentCategory(parentId);
@@ -4347,6 +4484,7 @@
     });
     els.closeEditModal.addEventListener("click", closeEditModal);
     els.saveEditTodo.addEventListener("click", saveEditTodo);
+    els.copyEditEvent.addEventListener("click", () => copyEvent(els.editTodoId.value));
     els.deleteEditTodo.addEventListener("click", deleteEditTodo);
     els.editModal.addEventListener("click", (event) => {
       if (event.target === els.editModal) closeEditModal();
