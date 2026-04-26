@@ -2061,8 +2061,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v34";
-    const OLD_KEYS = ["todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v35";
+    const OLD_KEYS = ["todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2814,9 +2814,6 @@
     }
 
     function renderDayTimeline() {
-      const allDayEntries = effectiveTodosForDate(state.selectedDate)
-        .filter(entry => entry.todo.kind !== "event");
-
       const untimedEvents = state.todos
         .filter(todo => todo.date === state.selectedDate && todo.kind === "event" && !todo.startTime);
 
@@ -2824,10 +2821,6 @@
         ...state.todos.filter(todo => todo.date === state.selectedDate && todo.kind === "event" && todo.startTime),
         ...(state.showClassesInTimeline ? classesForDate(state.selectedDate) : [])
       ].sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-      const todoAllDayHtml = allDayEntries.length
-        ? `<div class="all-day-box"><h3>締切Todo</h3>${todoListHtml(allDayEntries, "")}</div>`
-        : "";
 
       const untimedEventHtml = untimedEvents.length
         ? `<div class="all-day-box"><h3>時刻なしの予定</h3>${untimedEvents.map(todo => `
@@ -2845,7 +2838,7 @@
           `).join("")}</div>`
         : "";
 
-      const allDayHtml = todoAllDayHtml + untimedEventHtml;
+      const allDayHtml = untimedEventHtml;
 
       const startHour = 5;
       const endHour = 24;
