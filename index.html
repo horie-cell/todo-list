@@ -1792,6 +1792,11 @@
               </select>
             </label>
 
+            <label id="todoParentField">
+              親カテゴリ
+              <select id="todoParent"></select>
+            </label>
+
             <label id="todoChildField">
               子カテゴリ
               <select id="todoChild"></select>
@@ -1945,6 +1950,7 @@
 
               <div class="actions">
                 <button id="saveClass" class="primary">保存</button>
+                <button id="addTodoFromClass" class="secondary">この授業のTodoを追加</button>
                 <button id="deleteClass" class="secondary">この授業を削除</button>
               </div>
             </div>
@@ -2173,8 +2179,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v40";
-    const OLD_KEYS = ["todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v41";
+    const OLD_KEYS = ["todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2288,6 +2294,8 @@
 
     const els = {
       todoKind: document.getElementById("todoKind"),
+      todoParentField: document.getElementById("todoParentField"),
+      todoParent: document.getElementById("todoParent"),
       todoChildField: document.getElementById("todoChildField"),
       todoChild: document.getElementById("todoChild"),
       todoTitle: document.getElementById("todoTitle"),
@@ -2365,6 +2373,7 @@
       cancelClassPresetColor: document.getElementById("cancelClassPresetColor"),
       saveClassPresetColor: document.getElementById("saveClassPresetColor"),
       saveClass: document.getElementById("saveClass"),
+      addTodoFromClass: document.getElementById("addTodoFromClass"),
       deleteClass: document.getElementById("deleteClass"),
       fabButton: document.getElementById("fabButton"),
       fabMenu: document.getElementById("fabMenu"),
@@ -2787,16 +2796,15 @@
     function renderSelects() {
       const parentOptions = state.parents.map(parent => ({ value: parent.id, label: parent.name }));
 
-      const allChildOptions = flatCategories().map(category => ({
-        value: category.childId,
-        label: category.label
-      }));
+      fillSelect(els.todoParent, parentOptions, els.todoParent.value || state.selectedParentId || state.parents[0]?.id || "");
+      const todoParentId = els.todoParent.value || state.parents[0]?.id || "";
+      const todoChildren = getParent(todoParentId)?.children || [];
       fillSelect(
         els.todoChild,
-        allChildOptions,
-        els.todoChild.value || allChildOptions[0]?.value || ""
+        todoChildren.map(child => ({ value: child.id, label: child.name })),
+        els.todoChild.value || todoChildren[0]?.id || ""
       );
-      els.todoChild.disabled = allChildOptions.length === 0;
+      els.todoChild.disabled = todoChildren.length === 0;
 
       fillSelect(els.categoryParent, parentOptions, state.selectedParentId);
       fillSelect(els.filterParent, parentOptions, state.filterParentId);
@@ -2835,6 +2843,7 @@
       const isEvent = els.todoKind.value === "event";
       els.addViewTitle.textContent = isEvent ? "予定を追加" : "Todoを追加";
       els.todoDateLabel.textContent = isEvent ? "日程" : "締切日";
+      els.todoParentField.classList.remove("hidden-field");
       els.todoChildField.classList.remove("hidden-field");
       els.todoImportanceField.classList.toggle("hidden-field", isEvent);
       els.todoMinutesField.classList.toggle("hidden-field", isEvent);
@@ -3322,6 +3331,33 @@
       showClassEditor();
     }
 
+
+    function addTodoFromSelectedClass() {
+      const classTitle = els.classTitle.value.trim() || "授業";
+      closeClassEditor();
+      state.view = "add";
+      renderAll();
+
+      els.todoKind.value = "todo";
+      updateTodoFormVisibility();
+
+      const classParent = state.parents.find(parent => parent.name.includes("授業")) || state.parents[0];
+      if (classParent) {
+        els.todoParent.value = classParent.id;
+        renderSelects();
+        const firstChild = getFirstChildId(classParent.id);
+        if (firstChild) els.todoChild.value = firstChild;
+      }
+
+      els.todoTitle.value = classTitle + "のTodo";
+      els.todoDetail.value = "";
+      els.todoDate.value = todayString();
+      els.todoDeadlineTime.value = "";
+      els.todoImportance.value = "中";
+      els.todoMinutes.value = "30";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
     function saveClass() {
       const title = els.classTitle.value.trim();
       if (!title) return;
@@ -3547,10 +3583,10 @@
 
     function addTodo() {
       const kind = els.todoKind.value || "todo";
+      const parentId = els.todoParent.value || state.parents[0]?.id || "";
       const selectedChildId = els.todoChild.value;
       const selectedCategory = getCategoryByChildId(selectedChildId) || flatCategories()[0];
-      const parentId = kind === "event" ? (selectedCategory?.parentId || "") : (selectedCategory?.parentId || "");
-      const childId = kind === "event" ? (selectedCategory?.childId || "") : selectedChildId;
+      const childId = selectedChildId || selectedCategory?.childId || "";
       const title = els.todoTitle.value.trim();
 
       if (!title || (!childId && kind === "todo")) {
@@ -3928,6 +3964,12 @@
       updateTodoFormVisibility();
     });
 
+    els.todoParent.addEventListener("change", () => {
+      const firstChildId = getFirstChildId(els.todoParent.value);
+      els.todoChild.value = firstChildId;
+      renderSelects();
+    });
+
     els.categoryParent.addEventListener("change", () => {
       state.selectedParentId = els.categoryParent.value;
       renderAll();
@@ -4007,6 +4049,7 @@
       if (event.target === els.classColorSheet) closeClassPresetColorSheet();
     });
     els.saveClass.addEventListener("click", saveClass);
+    els.addTodoFromClass.addEventListener("click", addTodoFromSelectedClass);
     els.deleteClass.addEventListener("click", deleteClass);
     els.clearSelectedClass.addEventListener("click", () => {
       clearClassEditor();
