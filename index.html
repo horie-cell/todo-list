@@ -967,9 +967,24 @@
     .day-nav {
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) auto;
-      gap: 8px;
+      gap: 6px 8px;
       align-items: end;
-      width: min(380px, 100%);
+      width: min(430px, 100%);
+    }
+
+    #prevDay, #nextDay {
+      align-self: end;
+    }
+
+    .day-date-stack {
+      display: grid;
+      gap: 6px;
+    }
+
+    #todayDay {
+      justify-self: stretch;
+      padding-top: 7px;
+      padding-bottom: 7px;
     }
 
     .day-nav .secondary {
@@ -1726,13 +1741,16 @@
           </div>
           <div class="day-nav">
             <button id="prevDay" class="secondary">前日</button>
-            <label>
-              表示する日
-              <div class="date-with-weekday">
-                <input id="selectedDate" type="date" />
-                <span id="selectedWeekday" class="day-weekday">月</span>
-              </div>
-            </label>
+            <div class="day-date-stack">
+              <label class="day-date-label">
+                表示する日
+                <div class="date-with-weekday">
+                  <input id="selectedDate" type="date" />
+                  <span id="selectedWeekday" class="day-weekday">月</span>
+                </div>
+              </label>
+              <button id="todayDay" class="secondary">今日</button>
+            </div>
             <button id="nextDay" class="secondary">翌日</button>
           </div>
         </div>
@@ -1810,6 +1828,11 @@
             <label>
               詳細
               <textarea id="todoDetail" placeholder="内容、提出場所、注意点など"></textarea>
+            </label>
+
+            <label id="eventLocationField">
+              場所 予定用
+              <input id="todoLocation" placeholder="例: 5号館、渋谷、オンライン" />
             </label>
 
             <div class="two">
@@ -2125,6 +2148,11 @@
           <textarea id="editDetail"></textarea>
         </label>
 
+        <label id="editLocationField">
+          場所 予定用
+          <input id="editLocation" placeholder="例: 5号館、渋谷、オンライン" />
+        </label>
+
         <div class="two">
           <label id="editDateField">
             <span id="editDateLabel">締切日</span>
@@ -2179,8 +2207,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v41";
-    const OLD_KEYS = ["todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v47";
+    const OLD_KEYS = ["todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2300,6 +2328,8 @@
       todoChild: document.getElementById("todoChild"),
       todoTitle: document.getElementById("todoTitle"),
       todoDetail: document.getElementById("todoDetail"),
+      eventLocationField: document.getElementById("eventLocationField"),
+      todoLocation: document.getElementById("todoLocation"),
       todoDateField: document.getElementById("todoDateField"),
       todoDateLabel: document.getElementById("todoDateLabel"),
       todoDate: document.getElementById("todoDate"),
@@ -2336,6 +2366,7 @@
       selectedWeekday: document.getElementById("selectedWeekday"),
       prevDay: document.getElementById("prevDay"),
       nextDay: document.getElementById("nextDay"),
+      todayDay: document.getElementById("todayDay"),
       dayTodos: document.getElementById("dayTodos"),
       dayTimeline: document.getElementById("dayTimeline"),
       filterParent: document.getElementById("filterParent"),
@@ -2388,6 +2419,8 @@
       editChild: document.getElementById("editChild"),
       editTitleInput: document.getElementById("editTitleInput"),
       editDetail: document.getElementById("editDetail"),
+      editLocationField: document.getElementById("editLocationField"),
+      editLocation: document.getElementById("editLocation"),
       editDateField: document.getElementById("editDateField"),
       editDateLabel: document.getElementById("editDateLabel"),
       editDate: document.getElementById("editDate"),
@@ -2650,6 +2683,7 @@
             startTime: todo.startTime || "",
             endTime: todo.endTime || "",
             deadlineTime: todo.deadlineTime || "",
+            location: todo.location || "",
             certaintyId
           };
         });
@@ -2848,6 +2882,7 @@
       els.todoImportanceField.classList.toggle("hidden-field", isEvent);
       els.todoMinutesField.classList.toggle("hidden-field", isEvent);
       els.todoDeadlineTimeField.classList.toggle("hidden-field", isEvent);
+      els.eventLocationField.classList.toggle("hidden-field", !isEvent);
       els.eventStartTimeField.classList.toggle("hidden-field", !isEvent);
       els.eventEndTimeField.classList.toggle("hidden-field", !isEvent);
       els.todoCertaintyField.classList.toggle("hidden-field", !isEvent);
@@ -2988,7 +3023,7 @@
                   <span class="kind-badge">${escapeHtml(kindLabel(todo.kind))}</span>
                   <span class="badge">${escapeHtml(category?.label || "カテゴリ不明")}</span>
                   <span class="badge">${escapeHtml(isCarryOver ? "元の締切: " + deadlineText(todo) : (todo.kind === "event" ? dateLabel(todo.date) : "締切: " + deadlineText(todo)))}</span>
-                  ${todo.kind === "event" ? `<span class="badge">${escapeHtml(timeText(todo))}</span>` : ""}
+                  ${todo.kind === "event" ? `<span class="badge">${escapeHtml(timeText(todo))}</span>${todo.location ? `<span class="badge">${escapeHtml(todo.location)}</span>` : ""}` : ""}
                   <span class="importance-badge" style="background:${importanceColor(isCarryOver ? "高" : todo.importance)}">重要度: ${isCarryOver ? "高" : escapeHtml(todo.importance)}</span>
                   ${todo.kind === "event" || isCarryOver ? `<span class="certainty-badge" style="${todo.kind === "event" ? "border-color:" + certaintyColor(todo.certaintyId) + "; background:" + certaintyColor(todo.certaintyId) : ""}">${escapeHtml(isCarryOver ? "期限切れ" : certaintyLabel(todo.certaintyId))}</span>` : ""}
                   ${todo.kind !== "event" ? `<span class="badge">${Number(todo.minutes) || 0}分</span>` : ""}
@@ -3028,6 +3063,7 @@
                 <div class="todo-meta">
                   <span class="kind-badge">予定</span>
                   <span class="badge">${escapeHtml(dateLabel(todo.date))}</span>
+                  ${todo.location ? `<span class="badge">${escapeHtml(todo.location)}</span>` : ""}
                   <span class="certainty-badge">${escapeHtml(certaintyLabel(todo.certaintyId))}</span>
                 </div>
               </div>
@@ -3073,7 +3109,7 @@
           : "border:2px solid " + certaintyColor(todo.certaintyId) + "; background:" + certaintyColor(todo.certaintyId);
         const meta = todo.kind === "class"
           ? `${todo.startTime}〜${todo.endTime}${todo.room ? "・" + todo.room : ""}`
-          : `${timeText(todo)}・${certaintyLabel(todo.certaintyId)}`;
+          : `${timeText(todo)}${todo.location ? "・" + todo.location : ""}・${certaintyLabel(todo.certaintyId)}`;
 
         return `
           <div
@@ -3603,6 +3639,7 @@
         childId,
         title,
         detail: els.todoDetail.value.trim(),
+        location: kind === "event" ? els.todoLocation.value.trim() : "",
         date: els.todoDate.value || todayString(),
         startTime: kind === "event" ? (els.todoStartTime.value || "") : "",
         endTime: kind === "event" ? (els.todoEndTime.value || "") : "",
@@ -3615,6 +3652,7 @@
 
       els.todoTitle.value = "";
       els.todoDetail.value = "";
+      els.todoLocation.value = "";
       els.todoMinutes.value = "30";
       els.todoStartTime.value = "";
       els.todoEndTime.value = "";
@@ -3741,6 +3779,7 @@
       const isEvent = els.editKind.value === "event";
       els.editDateLabel.textContent = isEvent ? "日程" : "締切日";
       els.editDeadlineTimeField.classList.toggle("hidden-field", isEvent);
+      els.editLocationField.classList.toggle("hidden-field", !isEvent);
       els.editStartTimeField.classList.toggle("hidden-field", !isEvent);
       els.editEndTimeField.classList.toggle("hidden-field", !isEvent);
       els.editImportanceField.classList.toggle("hidden-field", isEvent);
@@ -3766,6 +3805,7 @@
       );
       els.editTitleInput.value = todo.title;
       els.editDetail.value = todo.detail || "";
+      els.editLocation.value = todo.location || "";
       els.editDate.value = todo.date;
       els.editDeadlineTime.value = todo.deadlineTime || "";
       els.editStartTime.value = todo.startTime || "";
@@ -3794,6 +3834,7 @@
       todo.childId = els.editChild.value;
       todo.title = title;
       todo.detail = els.editDetail.value.trim();
+      todo.location = todo.kind === "event" ? els.editLocation.value.trim() : "";
       todo.date = els.editDate.value || todayString();
       todo.startTime = todo.kind === "event" ? (els.editStartTime.value || "") : "";
       todo.endTime = todo.kind === "event" ? (els.editEndTime.value || "") : "";
@@ -4005,6 +4046,11 @@
 
     els.nextDay.addEventListener("click", () => {
       state.selectedDate = dateOffset(state.selectedDate || todayString(), 1);
+      renderAll();
+    });
+
+    els.todayDay.addEventListener("click", () => {
+      state.selectedDate = todayString();
       renderAll();
     });
 
