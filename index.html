@@ -977,6 +977,22 @@
       white-space: nowrap;
     }
 
+
+    .date-with-weekday {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 28px;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .day-weekday {
+      color: var(--muted);
+      font-weight: 900;
+      font-size: 14px;
+      text-align: center;
+      line-height: 1;
+    }
+
     @media (max-width: 720px) {
       .day-nav {
         width: 100%;
@@ -1643,7 +1659,10 @@
             <button id="prevDay" class="secondary">前日</button>
             <label>
               表示する日
-              <input id="selectedDate" type="date" />
+              <div class="date-with-weekday">
+                <input id="selectedDate" type="date" />
+                <span id="selectedWeekday" class="day-weekday">月</span>
+              </div>
             </label>
             <button id="nextDay" class="secondary">翌日</button>
           </div>
@@ -2085,8 +2104,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v36";
-    const OLD_KEYS = ["todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v39";
+    const OLD_KEYS = ["todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2233,6 +2252,7 @@
       nextMonth: document.getElementById("nextMonth"),
       thisMonth: document.getElementById("thisMonth"),
       selectedDate: document.getElementById("selectedDate"),
+      selectedWeekday: document.getElementById("selectedWeekday"),
       prevDay: document.getElementById("prevDay"),
       nextDay: document.getElementById("nextDay"),
       dayTodos: document.getElementById("dayTodos"),
@@ -2350,6 +2370,13 @@
       const d = toDate(dateString);
       const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
       return (d.getMonth() + 1) + "/" + d.getDate() + "\n" + weekdays[d.getDay()];
+    }
+
+    function weekdayFullLabel(dateString) {
+      const d = toDate(dateString);
+      if (Number.isNaN(d.getTime())) return "";
+      const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+      return weekdays[d.getDay()];
     }
 
     function monthLabel(dateString) {
@@ -2833,6 +2860,7 @@
 
     function renderDay() {
       els.selectedDate.value = state.selectedDate;
+      els.selectedWeekday.textContent = weekdayFullLabel(state.selectedDate);
       const entries = effectiveTodosForDate(state.selectedDate)
         .filter(entry => entry.todo.kind !== "event");
       els.dayTodos.innerHTML = todoListHtml(entries, "この日のTodoはありません。");
