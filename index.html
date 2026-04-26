@@ -1061,6 +1061,37 @@
       border-top: 2px solid var(--line2);
     }
 
+    .parent-group-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .parent-group-buttons {
+      display: inline-flex;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .parent-group-buttons button {
+      border: 1px solid var(--line2);
+      background: white;
+      color: #475569;
+      border-radius: 7px;
+      width: 26px;
+      height: 22px;
+      padding: 0;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .parent-group-buttons button:disabled {
+      color: #cbd5e1;
+      background: #f8fafc;
+      cursor: not-allowed;
+    }
+
     .parent-group-row td:first-child {
       position: static;
       width: auto;
@@ -1831,7 +1862,7 @@
             </label>
 
             <label id="eventLocationField">
-              場所 予定用
+              場所
               <input id="todoLocation" placeholder="例: 5号館、渋谷、オンライン" />
             </label>
 
@@ -1870,7 +1901,7 @@
 
             <div class="two">
               <label id="todoCertaintyField">
-                確定度 予定用
+                確定度
                 <select id="todoCertainty"></select>
               </label>
 
@@ -2149,7 +2180,7 @@
         </label>
 
         <label id="editLocationField">
-          場所 予定用
+          場所
           <input id="editLocation" placeholder="例: 5号館、渋谷、オンライン" />
         </label>
 
@@ -2188,7 +2219,7 @@
 
         <div class="two">
           <label id="editCertaintyField">
-            確定度 予定用
+            確定度
             <select id="editCertainty"></select>
           </label>
 
@@ -2207,8 +2238,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v50";
-    const OLD_KEYS = ["todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v53";
+    const OLD_KEYS = ["todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2297,6 +2328,7 @@
       showClassesInTimeline: true,
       weekSortMode: "manual",
       weekOrderChildIds: [],
+      weekOrderParentIds: [],
       categoryColors: {
         kyudo: "#bbf7d0",
         koto: "#fbcfe8",
@@ -2671,6 +2703,7 @@
         loaded.showClassesInTimeline = typeof parsed.showClassesInTimeline === "boolean" ? parsed.showClassesInTimeline : true;
         loaded.weekSortMode = ["manual", "parent"].includes(parsed.weekSortMode) ? parsed.weekSortMode : "manual";
         loaded.weekOrderChildIds = Array.isArray(parsed.weekOrderChildIds) ? parsed.weekOrderChildIds : [];
+        loaded.weekOrderParentIds = Array.isArray(parsed.weekOrderParentIds) ? parsed.weekOrderParentIds : [];
         loaded.todos = loaded.todos.map(todo => {
           const kind = todo.kind || "todo";
           const certaintyId = kind === "event"
@@ -2690,6 +2723,8 @@
         loaded.classColorPresets = mergeClassColorPresets(loaded.classColorPresets);
         loaded.classes = loaded.classes.map(classItem => normalizeClassColor(classItem, loaded.classColorPresets));
         loaded.selectedDate = loaded.selectedDate || todayString();
+        loaded.filterParentId = loaded.filterParentId || "all";
+        loaded.filterChildId = loaded.filterChildId || "all";
         loaded.monthCursor = loaded.monthCursor || todayString();
         loaded.lastKnownToday = loaded.lastKnownToday || todayString();
         return loaded;
@@ -2716,9 +2751,14 @@
 
     function normalizeWeekOrder() {
       const childIds = flatCategories().map(category => category.childId);
-      const known = state.weekOrderChildIds.filter(id => childIds.includes(id));
-      const missing = childIds.filter(id => !known.includes(id));
-      state.weekOrderChildIds = [...known, ...missing];
+      const knownChildren = state.weekOrderChildIds.filter(id => childIds.includes(id));
+      const missingChildren = childIds.filter(id => !knownChildren.includes(id));
+      state.weekOrderChildIds = [...knownChildren, ...missingChildren];
+
+      const parentIds = state.parents.map(parent => parent.id);
+      const knownParents = state.weekOrderParentIds.filter(id => parentIds.includes(id));
+      const missingParents = parentIds.filter(id => !knownParents.includes(id));
+      state.weekOrderParentIds = [...knownParents, ...missingParents];
     }
 
     function weekCategories() {
@@ -2726,7 +2766,13 @@
       normalizeWeekOrder();
 
       if (state.weekSortMode === "parent") {
-        return categories.map(category => ({ ...category, isGrouped: true }));
+        const parentIndexMap = new Map(state.weekOrderParentIds.map((id, index) => [id, index]));
+        const childIndexMap = new Map(state.weekOrderChildIds.map((id, index) => [id, index]));
+        return [...categories].sort((a, b) => {
+          const parentDiff = (parentIndexMap.get(a.parentId) ?? 9999) - (parentIndexMap.get(b.parentId) ?? 9999);
+          if (parentDiff !== 0) return parentDiff;
+          return (childIndexMap.get(a.childId) ?? 9999) - (childIndexMap.get(b.childId) ?? 9999);
+        }).map(category => ({ ...category, isGrouped: true }));
       }
 
       const indexMap = new Map(state.weekOrderChildIds.map((id, index) => [id, index]));
@@ -2748,8 +2794,46 @@
       renderAll();
     }
 
+    function moveWeekChildInParent(childId, parentId, direction) {
+      normalizeWeekOrder();
+
+      const siblings = flatCategories()
+        .filter(category => category.parentId === parentId)
+        .sort((a, b) => state.weekOrderChildIds.indexOf(a.childId) - state.weekOrderChildIds.indexOf(b.childId))
+        .map(category => category.childId);
+
+      const index = siblings.indexOf(childId);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= siblings.length) return;
+
+      const targetSiblingId = siblings[nextIndex];
+      const copy = [...state.weekOrderChildIds];
+      const a = copy.indexOf(childId);
+      const b = copy.indexOf(targetSiblingId);
+      if (a < 0 || b < 0) return;
+
+      [copy[a], copy[b]] = [copy[b], copy[a]];
+      state.weekOrderChildIds = copy;
+      state.weekSortMode = "parent";
+      renderAll();
+    }
+
+    function moveWeekParent(parentId, direction) {
+      normalizeWeekOrder();
+      const index = state.weekOrderParentIds.indexOf(parentId);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= state.weekOrderParentIds.length) return;
+
+      const copy = [...state.weekOrderParentIds];
+      [copy[index], copy[nextIndex]] = [copy[nextIndex], copy[index]];
+      state.weekOrderParentIds = copy;
+      state.weekSortMode = "parent";
+      renderAll();
+    }
+
     function resetWeekOrder() {
       state.weekOrderChildIds = flatCategories().map(category => category.childId);
+      state.weekOrderParentIds = state.parents.map(parent => parent.id);
       renderAll();
     }
 
@@ -2841,15 +2925,25 @@
       els.todoChild.disabled = todoChildren.length === 0;
 
       fillSelect(els.categoryParent, parentOptions, state.selectedParentId);
-      fillSelect(els.filterParent, parentOptions, state.filterParentId);
 
-      const filterChildren = getParent(state.filterParentId)?.children || [];
+      const filterParentOptions = [
+        { value: "all", label: "すべて" },
+        ...parentOptions
+      ];
+      fillSelect(els.filterParent, filterParentOptions, state.filterParentId || "all");
+
+      const isAllFilterParents = els.filterParent.value === "all";
+      const filterChildren = isAllFilterParents ? [] : (getParent(els.filterParent.value)?.children || []);
+      const filterChildOptions = [
+        { value: "all", label: "すべて" },
+        ...filterChildren.map(child => ({ value: child.id, label: child.name }))
+      ];
       fillSelect(
         els.filterChild,
-        filterChildren.map(child => ({ value: child.id, label: child.name })),
-        state.filterChildId || filterChildren[0]?.id || ""
+        filterChildOptions,
+        state.filterChildId || "all"
       );
-      els.filterChild.disabled = filterChildren.length === 0;
+      els.filterChild.disabled = isAllFilterParents;
 
       fillSelect(
         els.todoCertainty,
@@ -2935,8 +3029,17 @@
 
       let lastParentId = "";
       const body = categories.map((category, index) => {
+        const parentIndex = state.weekOrderParentIds.indexOf(category.parentId);
         const groupRow = state.weekSortMode === "parent" && category.parentId !== lastParentId
-          ? `<tr class="parent-group-row"><td colspan="${dates.length + 1}">${escapeHtml(category.parentName)}</td></tr>`
+          ? `<tr class="parent-group-row"><td colspan="${dates.length + 1}">
+              <div class="parent-group-head">
+                <span>${escapeHtml(category.parentName)}</span>
+                <span class="parent-group-buttons">
+                  <button data-action="move-week-parent" data-id="${escapeHtml(category.parentId)}" data-direction="-1" ${parentIndex <= 0 ? "disabled" : ""}>↑</button>
+                  <button data-action="move-week-parent" data-id="${escapeHtml(category.parentId)}" data-direction="1" ${parentIndex === state.weekOrderParentIds.length - 1 ? "disabled" : ""}>↓</button>
+                </span>
+              </div>
+            </td></tr>`
           : "";
         lastParentId = category.parentId;
 
@@ -2951,12 +3054,17 @@
           `;
         }).join("");
 
+        const siblingCategories = categories.filter(item => item.parentId === category.parentId);
+        const siblingIndex = siblingCategories.findIndex(item => item.childId === category.childId);
         const moveButtons = state.weekSortMode === "manual"
           ? `<div class="week-move-buttons">
               <button data-action="move-week-category" data-id="${escapeHtml(category.childId)}" data-direction="-1" ${index === 0 ? "disabled" : ""}>↑</button>
               <button data-action="move-week-category" data-id="${escapeHtml(category.childId)}" data-direction="1" ${index === categories.length - 1 ? "disabled" : ""}>↓</button>
             </div>`
-          : "";
+          : `<div class="week-move-buttons">
+              <button data-action="move-week-child-in-parent" data-id="${escapeHtml(category.childId)}" data-parent-id="${escapeHtml(category.parentId)}" data-direction="-1" ${siblingIndex <= 0 ? "disabled" : ""}>↑</button>
+              <button data-action="move-week-child-in-parent" data-id="${escapeHtml(category.childId)}" data-parent-id="${escapeHtml(category.parentId)}" data-direction="1" ${siblingIndex === siblingCategories.length - 1 ? "disabled" : ""}>↓</button>
+            </div>`;
 
         return `
           ${groupRow}
@@ -3143,27 +3251,40 @@
     }
 
     function renderCategory() {
-      const currentParent = getParent(state.filterParentId);
-      const currentChildren = currentParent?.children || [];
-
-      if (!state.filterChildId && currentChildren.length > 0) {
-        state.filterChildId = currentChildren[0].id;
+      if (!state.filterParentId) {
+        state.filterParentId = "all";
       }
+      if (!state.filterChildId) {
+        state.filterChildId = "all";
+      }
+
+      const isAllParents = state.filterParentId === "all";
+      const currentParent = isAllParents ? null : getParent(state.filterParentId);
+      const isAllChildren = state.filterChildId === "all";
 
       const selected = flatCategories().find(
         category => category.parentId === state.filterParentId && category.childId === state.filterChildId
       );
 
-      els.selectedCategoryLabel.textContent = selected?.label || "未選択";
+      if (isAllParents) {
+        els.selectedCategoryLabel.textContent = "すべて / すべて";
+      } else {
+        els.selectedCategoryLabel.textContent = isAllChildren
+          ? (currentParent ? currentParent.name + " / すべて" : "未選択")
+          : (selected?.label || "未選択");
+      }
 
       const entries = state.todos
-        .filter(todo => todo.parentId === state.filterParentId && todo.childId === state.filterChildId)
+        .filter(todo => {
+          if (!isAllParents && todo.parentId !== state.filterParentId) return false;
+          if (!isAllParents && !isAllChildren && todo.childId !== state.filterChildId) return false;
+          return true;
+        })
         .sort((a, b) => a.date.localeCompare(b.date))
         .map(todo => ({ todo, isCarryOver: false }));
 
       els.categoryTodos.innerHTML = todoListHtml(entries, "このカテゴリの項目はありません。");
     }
-
 
     function renderCompleted() {
       const entries = state.todos
@@ -3706,8 +3827,8 @@
         state.selectedParentId = firstParent.id;
       }
 
-      if (!state.parents.some(parent => parent.id === state.filterParentId)) {
-        state.filterParentId = firstParent.id;
+      if (state.filterParentId !== "all" && !state.parents.some(parent => parent.id === state.filterParentId)) {
+        state.filterParentId = "all";
         state.filterChildId = "all";
       }
 
@@ -3981,6 +4102,12 @@
       if (action === "move-week-category" && id) {
         moveWeekCategory(id, Number(target.dataset.direction) || 0);
       }
+      if (action === "move-week-parent" && id) {
+        moveWeekParent(id, Number(target.dataset.direction) || 0);
+      }
+      if (action === "move-week-child-in-parent" && id && parentId) {
+        moveWeekChildInParent(id, parentId, Number(target.dataset.direction) || 0);
+      }
     }
 
     function runSelfTests() {
@@ -4045,8 +4172,8 @@
     });
 
     els.filterParent.addEventListener("change", () => {
-      state.filterParentId = els.filterParent.value;
-      state.filterChildId = getFirstChildId(state.filterParentId);
+      state.filterParentId = els.filterParent.value || "all";
+      state.filterChildId = "all";
       renderAll();
     });
 
