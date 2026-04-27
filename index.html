@@ -2308,8 +2308,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v61";
-    const OLD_KEYS = ["todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v63";
+    const OLD_KEYS = ["todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2556,6 +2556,9 @@
       copyEditEvent: document.getElementById("copyEditEvent"),
       deleteEditTodo: document.getElementById("deleteEditTodo")
     };
+
+    // 授業編集パネルはbody直下に移動し、日別画面から開いても日別画面を保持する。
+    document.body.appendChild(els.classEditorPanel);
 
     function makeId(prefix) {
       if (window.crypto && typeof window.crypto.randomUUID === "function") {
@@ -3127,7 +3130,7 @@
           <tr>
             <th>項目</th>
             ${dates.map(date => {
-              const count = effectiveTodosForDate(date).filter(entry => entry.todo.kind !== "event").length;
+              const count = effectiveTodosForDate(date).filter(entry => entry.todo.kind !== "event" && !entry.todo.done).length;
               return `<th class="date-head ${date === todayString() ? "today" : ""}">
                 <div class="week-date-wrap">
                   <div>${escapeHtml(weekDateLabel(date)).replace("\n", "<br>")}</div>
@@ -3330,7 +3333,7 @@
 
         const top = ((clippedStart - timelineStartMinutes) / 60) * pxPerHour;
         const height = Math.max(28, ((clippedEnd - clippedStart) / 60) * pxPerHour);
-        const action = todo.kind === "class" ? "open-timetable" : "edit";
+        const action = todo.kind === "class" ? "open-class-inline" : "edit";
         const borderStyle = todo.kind === "class"
           ? "border:2px solid " + classPresetColor(todo.colorKey)
           : "border:2px solid " + certaintyColor(todo.certaintyId) + "; background:" + certaintyColor(todo.certaintyId);
@@ -4316,6 +4319,9 @@
         renderAll();
         openClassSlot(Number(day), Number(period));
         window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      if (action === "open-class-inline" && id) {
+        openClassEditor(id);
       }
       if (action === "open-timetable" && id) {
         state.view = "timetable";
