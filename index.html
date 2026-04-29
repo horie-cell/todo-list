@@ -2313,8 +2313,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v68";
-    const OLD_KEYS = ["todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v67";
+    const OLD_KEYS = ["todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2734,47 +2734,6 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
-    }
-
-    function normalizeSearchText(value) {
-      return String(value || "")
-        .normalize("NFKC")
-        .toLowerCase()
-        .replace(/\s+/g, " ")
-        .trim();
-    }
-
-    function categorySearchText(todo) {
-      const parentName = getParent(todo.parentId)?.name || "";
-      const childName = getChild(todo.parentId, todo.childId)?.name || "";
-      const certaintyText = certaintyLabel(todo.certaintyId);
-      return normalizeSearchText([
-        todo.title,
-        todo.detail,
-        todo.location,
-        todo.date,
-        todo.startTime,
-        todo.endTime,
-        todo.deadlineTime,
-        todo.importance,
-        certaintyText,
-        kindLabel(todo.kind),
-        parentName,
-        childName
-      ].filter(Boolean).join(" "));
-    }
-
-    function compareTodoForCategory(a, b) {
-      const doneA = (a.kind || "todo") === "todo" && Boolean(a.done);
-      const doneB = (b.kind || "todo") === "todo" && Boolean(b.done);
-      if (doneA !== doneB) return Number(doneA) - Number(doneB);
-      const dateCompare = String(a.date || "").localeCompare(String(b.date || ""));
-      if (dateCompare) return dateCompare;
-      const timeA = a.kind === "event" ? (a.startTime || "") : (a.deadlineTime || "");
-      const timeB = b.kind === "event" ? (b.startTime || "") : (b.deadlineTime || "");
-      const timeCompare = timeA.localeCompare(timeB);
-      if (timeCompare) return timeCompare;
-      return importanceRank(b.importance) - importanceRank(a.importance);
     }
 
     function clone(value) {
@@ -3429,9 +3388,7 @@
       const isAllParents = state.filterParentId === "all";
       const isAllChildren = state.filterChildId === "all";
       const filterKind = state.filterKind || "all";
-      const rawSearchQuery = state.categorySearchQuery || "";
-      const searchQuery = normalizeSearchText(rawSearchQuery);
-      const searchWords = searchQuery ? searchQuery.split(" ").filter(Boolean) : [];
+      const searchQuery = (state.categorySearchQuery || "").trim().toLowerCase();
 
       const currentParent = isAllParents ? null : getParent(state.filterParentId);
       const categoryLabel = isAllParents
@@ -3442,7 +3399,7 @@
               category => category.parentId === state.filterParentId && category.childId === state.filterChildId
             )?.label || "未選択");
       const kindLabel = filterKind === "todo" ? "Todoのみ" : filterKind === "event" ? "予定のみ" : "すべて";
-      const searchLabel = searchWords.length ? "検索: " + rawSearchQuery.trim() : "検索なし";
+      const searchLabel = searchQuery ? "検索: " + state.categorySearchQuery.trim() : "検索なし";
       els.selectedCategoryLabel.textContent = searchLabel + " / " + categoryLabel + " / " + kindLabel;
 
       const entries = state.todos
@@ -3450,13 +3407,28 @@
           if (!isAllParents && todo.parentId !== state.filterParentId) return false;
           if (!isAllChildren && todo.childId !== state.filterChildId) return false;
           if (filterKind !== "all" && (todo.kind || "todo") !== filterKind) return false;
-          if (searchWords.length) {
-            const haystack = categorySearchText(todo);
-            if (!searchWords.every(word => haystack.includes(word))) return false;
+          if (searchQuery) {
+            const parentName = getParent(todo.parentId)?.name || "";
+            const childName = getChild(todo.parentId, todo.childId)?.name || "";
+            const certaintyText = certaintyLabel(todo.certaintyId);
+            const haystack = [
+              todo.title,
+              todo.detail,
+              todo.location,
+              todo.date,
+              todo.startTime,
+              todo.endTime,
+              todo.deadlineTime,
+              todo.importance,
+              certaintyText,
+              parentName,
+              childName
+            ].filter(Boolean).join(" ").toLowerCase();
+            if (!haystack.includes(searchQuery)) return false;
           }
           return true;
         })
-        .sort(compareTodoForCategory)
+        .sort((a, b) => a.date.localeCompare(b.date))
         .map(todo => ({ todo, isCarryOver: false }));
 
       els.categoryTodos.innerHTML = todoListHtml(entries, "この条件に合う項目はありません。");
@@ -4496,8 +4468,7 @@
 
     els.categorySearch.addEventListener("input", () => {
       state.categorySearchQuery = els.categorySearch.value;
-      saveState();
-      renderCategory();
+      renderAll();
     });
 
     els.weekSortMode.addEventListener("change", () => {
