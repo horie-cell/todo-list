@@ -992,6 +992,25 @@
       font-weight: 800;
     }
 
+    .week-count-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .week-count-pill {
+      display: inline-block;
+      border-radius: 999px;
+      color: #0f172a;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      padding: 1px 5px;
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1.35;
+      white-space: nowrap;
+    }
+
     .timeline-controls {
       display: flex;
       justify-content: flex-end;
@@ -1910,6 +1929,11 @@
                 <input id="todoDate" type="date" />
               </label>
 
+              <label id="eventEndDateField">
+                終了日
+                <input id="todoEndDate" type="date" />
+              </label>
+
               <label id="todoDeadlineTimeField">
                 締切時刻
                 <input id="todoDeadlineTime" type="time" />
@@ -2239,6 +2263,11 @@
             <input id="editDate" type="date" />
           </label>
 
+          <label id="editEndDateField">
+            終了日
+            <input id="editEndDate" type="date" />
+          </label>
+
           <label id="editDeadlineTimeField">
             締切時刻
             <input id="editDeadlineTime" type="time" />
@@ -2313,8 +2342,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v72";
-    const OLD_KEYS = ["todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v73";
+    const OLD_KEYS = ["todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2453,6 +2482,8 @@
       todoDateField: document.getElementById("todoDateField"),
       todoDateLabel: document.getElementById("todoDateLabel"),
       todoDate: document.getElementById("todoDate"),
+      eventEndDateField: document.getElementById("eventEndDateField"),
+      todoEndDate: document.getElementById("todoEndDate"),
       todoDeadlineTimeField: document.getElementById("todoDeadlineTimeField"),
       todoDeadlineTime: document.getElementById("todoDeadlineTime"),
       eventStartTimeField: document.getElementById("eventStartTimeField"),
@@ -2548,6 +2579,8 @@
       editDateField: document.getElementById("editDateField"),
       editDateLabel: document.getElementById("editDateLabel"),
       editDate: document.getElementById("editDate"),
+      editEndDateField: document.getElementById("editEndDateField"),
+      editEndDate: document.getElementById("editEndDate"),
       editDeadlineTimeField: document.getElementById("editDeadlineTimeField"),
       editDeadlineTime: document.getElementById("editDeadlineTime"),
       editStartTimeField: document.getElementById("editStartTimeField"),
@@ -2584,6 +2617,30 @@
       const m = String(date.getMonth() + 1).padStart(2, "0");
       const d = String(date.getDate()).padStart(2, "0");
       return y + "-" + m + "-" + d;
+    }
+
+    function isValidDateString(value) {
+      const text = String(value || "");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return false;
+      const date = toDate(text);
+      if (Number.isNaN(date.getTime())) return false;
+      return toDateString(date) === text;
+    }
+
+    function normalizeDateString(value, fallback = todayString()) {
+      return isValidDateString(value) ? String(value) : fallback;
+    }
+
+    function normalizeEndDateForStart(startDate, endDate) {
+      const start = normalizeDateString(startDate);
+      const end = normalizeDateString(endDate, start);
+      return end < start ? start : end;
+    }
+
+    function dateDiffDays(startDate, endDate) {
+      const start = toDate(normalizeDateString(startDate));
+      const end = toDate(normalizeDateString(endDate, normalizeDateString(startDate)));
+      return Math.max(0, Math.round((end - start) / 86400000));
     }
 
     function todayString() {
@@ -2708,8 +2765,53 @@
       return "時刻未設定";
     }
 
+    function eventStartDate(todo) {
+      return normalizeDateString(todo.date);
+    }
+
+    function eventEndDate(todo) {
+      return normalizeEndDateForStart(eventStartDate(todo), todo.endDate || todo.date);
+    }
+
+    function isEventOnDate(todo, dateString) {
+      if ((todo.kind || "todo") !== "event") return false;
+      const date = normalizeDateString(dateString);
+      return eventStartDate(todo) <= date && date <= eventEndDate(todo);
+    }
+
+    function eventTimeOnDate(todo, dateString) {
+      if ((todo.kind || "todo") !== "event") {
+        return { startTime: todo.startTime || "", endTime: todo.endTime || "" };
+      }
+      const date = normalizeDateString(dateString);
+      const startDate = eventStartDate(todo);
+      const endDate = eventEndDate(todo);
+      if (startDate === endDate || !todo.startTime) {
+        return { startTime: todo.startTime || "", endTime: todo.endTime || "" };
+      }
+      if (date === startDate) {
+        return { startTime: todo.startTime || "00:00", endTime: "24:00" };
+      }
+      if (date === endDate) {
+        return { startTime: "00:00", endTime: todo.endTime || "24:00" };
+      }
+      return { startTime: "00:00", endTime: "24:00" };
+    }
+
+    function timelineEventForDate(todo, dateString) {
+      const times = eventTimeOnDate(todo, dateString);
+      return { ...todo, startTime: times.startTime, endTime: times.endTime };
+    }
+
+    function dateRangeLabel(todo) {
+      if ((todo.kind || "todo") !== "event") return dateLabel(todo.date);
+      const start = eventStartDate(todo);
+      const end = eventEndDate(todo);
+      return start === end ? dateLabel(start) : dateLabel(start) + "〜" + dateLabel(end);
+    }
+
     function deadlineText(todo) {
-      if (todo.kind === "event") return dateLabel(todo.date);
+      if (todo.kind === "event") return dateRangeLabel(todo);
       return todo.deadlineTime ? dateLabel(todo.date) + " " + todo.deadlineTime : dateLabel(todo.date);
     }
 
@@ -2753,6 +2855,8 @@
         todo.detail,
         todo.location,
         todo.date,
+        todo.endDate,
+        dateRangeLabel(todo),
         todo.startTime,
         todo.endTime,
         todo.deadlineTime,
@@ -2853,12 +2957,16 @@
         loaded.weekOrderParentIds = Array.isArray(parsed.weekOrderParentIds) ? parsed.weekOrderParentIds : [];
         loaded.todos = loaded.todos.map(todo => {
           const kind = todo.kind || "todo";
+          const date = normalizeDateString(todo.date);
+          const endDate = kind === "event" ? normalizeEndDateForStart(date, todo.endDate || todo.date) : "";
           const certaintyId = kind === "event"
             ? (todo.certaintyId === "candidate" ? "uncertain" : (todo.certaintyId || "confirmed"))
             : "";
           return {
             ...todo,
             kind,
+            date,
+            endDate,
             importance: todo.importance === "最高" ? "高" : (todo.importance || "中"),
             startTime: todo.startTime || "",
             endTime: todo.endTime || "",
@@ -3048,11 +3156,15 @@
     }
 
     function effectiveTodosForDate(dateString) {
+      const date = normalizeDateString(dateString);
       const base = state.todos
-        .filter(todo => todo.date === dateString)
+        .filter(todo => {
+          if ((todo.kind || "todo") === "event") return isEventOnDate(todo, date);
+          return todo.date === date;
+        })
         .map(todo => ({ todo, isCarryOver: false }));
 
-      if (dateString === todayString()) {
+      if (date === todayString()) {
         const carried = state.todos
           .filter(isOverdueTodo)
           .map(todo => ({ todo, isCarryOver: true }));
@@ -3064,6 +3176,24 @@
       }
 
       return base.sort((a, b) => importanceRank(b.todo.importance) - importanceRank(a.todo.importance));
+    }
+
+    function weekImportanceCounts(dateString) {
+      const counts = { "高": 0, "中": 0, "低": 0 };
+      effectiveTodosForDate(dateString).forEach(entry => {
+        const todo = entry.todo;
+        if ((todo.kind || "todo") === "event" || todo.done) return;
+        const level = entry.isCarryOver ? "高" : (["高", "中", "低"].includes(todo.importance) ? todo.importance : "中");
+        counts[level] += 1;
+      });
+      return counts;
+    }
+
+    function weekImportanceCountsHtml(dateString) {
+      const counts = weekImportanceCounts(dateString);
+      return `<div class="week-count-row">${["高", "中", "低"].map(level =>
+        `<span class="week-count-pill" style="background:${importanceColor(level)}">${level}:${counts[level]}</span>`
+      ).join("")}</div>`;
     }
 
     function fillSelect(select, options, selectedValue) {
@@ -3137,16 +3267,21 @@
     function updateTodoFormVisibility() {
       const isEvent = els.todoKind.value === "event";
       els.addViewTitle.textContent = isEvent ? "予定を追加" : "Todoを追加";
-      els.todoDateLabel.textContent = isEvent ? "日程" : "締切日";
+      els.todoDateLabel.textContent = isEvent ? "開始日" : "締切日";
       els.todoParentField.classList.remove("hidden-field");
       els.todoChildField.classList.remove("hidden-field");
       els.todoImportanceField.classList.toggle("hidden-field", isEvent);
       els.todoMinutesField.classList.toggle("hidden-field", isEvent);
       els.todoDeadlineTimeField.classList.toggle("hidden-field", isEvent);
+      els.eventEndDateField.classList.toggle("hidden-field", !isEvent);
       els.eventLocationField.classList.toggle("hidden-field", !isEvent);
       els.eventStartTimeField.classList.toggle("hidden-field", !isEvent);
       els.eventEndTimeField.classList.toggle("hidden-field", !isEvent);
       els.todoCertaintyField.classList.toggle("hidden-field", !isEvent);
+      if (isEvent) {
+        const startDate = els.todoDate.value || todayString();
+        els.todoEndDate.value = normalizeEndDateForStart(startDate, els.todoEndDate.value || startDate);
+      }
     }
 
     function renderCategories() {
@@ -3186,11 +3321,10 @@
           <tr>
             <th>項目</th>
             ${dates.map(date => {
-              const count = effectiveTodosForDate(date).filter(entry => entry.todo.kind !== "event" && !entry.todo.done).length;
               return `<th class="date-head ${date === todayString() ? "today" : ""}">
                 <div class="week-date-wrap">
                   <div>${escapeHtml(weekDateLabel(date)).replace("\n", "<br>")}</div>
-                  <span class="week-todo-count">${count}件</span>
+                  ${weekImportanceCountsHtml(date)}
                 </div>
               </th>`;
             }).join("")}
@@ -3330,10 +3464,12 @@
 
     function renderDayTimeline() {
       const untimedEvents = state.todos
-        .filter(todo => todo.date === state.selectedDate && todo.kind === "event" && !todo.startTime);
+        .filter(todo => isEventOnDate(todo, state.selectedDate) && !todo.startTime);
 
       const timedEvents = [
-        ...state.todos.filter(todo => todo.date === state.selectedDate && todo.kind === "event" && todo.startTime),
+        ...state.todos
+          .filter(todo => isEventOnDate(todo, state.selectedDate) && todo.startTime)
+          .map(todo => timelineEventForDate(todo, state.selectedDate)),
         ...(state.showClassesInTimeline ? classesForDate(state.selectedDate) : [])
       ].sort((a, b) => String(a.startTime || "").localeCompare(String(b.startTime || "")));
 
@@ -3345,7 +3481,7 @@
                 <p class="todo-detail">${escapeHtml(todo.detail || "詳細なし")}</p>
                 <div class="todo-meta">
                   <span class="kind-badge">予定</span>
-                  <span class="badge">${escapeHtml(dateLabel(todo.date))}</span>
+                  <span class="badge">${escapeHtml(dateRangeLabel(todo))}</span>
                   ${todo.location ? `<span class="badge">${escapeHtml(todo.location)}</span>` : ""}
                   <span class="certainty-badge">${escapeHtml(certaintyLabel(todo.certaintyId))}</span>
                 </div>
@@ -3396,7 +3532,7 @@
           : "border:2px solid " + certaintyColor(todo.certaintyId) + "; background:" + certaintyColor(todo.certaintyId);
         const meta = todo.kind === "class"
           ? `${todo.startTime}〜${todo.endTime}${todo.room ? "・" + todo.room : ""}`
-          : `${timeText(todo)}${todo.location ? "・" + todo.location : ""}・${certaintyLabel(todo.certaintyId)}`;
+          : `${timeText(todo)}${todo.location ? "・" + todo.location : ""}・${dateRangeLabel(todo)}・${certaintyLabel(todo.certaintyId)}`;
 
         return `
           <div
@@ -3902,6 +4038,7 @@
       renderAll();
       if (view === "add" && dateForNewItem) {
         els.todoDate.value = dateForNewItem;
+        if (kind === "event") els.todoEndDate.value = dateForNewItem;
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -4046,7 +4183,8 @@
         title,
         detail: els.todoDetail.value.trim(),
         location: kind === "event" ? els.todoLocation.value.trim() : "",
-        date: els.todoDate.value || todayString(),
+        date: normalizeDateString(els.todoDate.value || todayString()),
+        endDate: kind === "event" ? normalizeEndDateForStart(els.todoDate.value || todayString(), els.todoEndDate.value || els.todoDate.value || todayString()) : "",
         startTime: kind === "event" ? (els.todoStartTime.value || "") : "",
         endTime: kind === "event" ? (els.todoEndTime.value || "") : "",
         deadlineTime: kind === "event" ? "" : (els.todoDeadlineTime.value || ""),
@@ -4060,12 +4198,13 @@
       els.todoDetail.value = "";
       els.todoLocation.value = "";
       els.todoMinutes.value = "30";
+      els.todoEndDate.value = els.todoDate.value || todayString();
       els.todoStartTime.value = "";
       els.todoEndTime.value = "";
       els.todoDeadlineTime.value = "";
       els.todoCertainty.value = "confirmed";
       state.view = kind === "event" ? "day" : "matrix";
-      if (kind === "event") state.selectedDate = els.todoDate.value || todayString();
+      if (kind === "event") state.selectedDate = normalizeDateString(els.todoDate.value || todayString());
       renderAll();
     }
 
@@ -4227,12 +4366,15 @@
       const source = state.todos.find(item => item.id === id && item.kind === "event");
       if (!source) return;
 
-      const suggestedDate = dateOffset(source.date || todayString(), 1);
-      const inputDate = window.prompt("コピー先の日付を YYYY-MM-DD で入力してください。", suggestedDate);
+      const sourceStart = eventStartDate(source);
+      const sourceEnd = eventEndDate(source);
+      const durationDays = dateDiffDays(sourceStart, sourceEnd);
+      const suggestedDate = dateOffset(sourceStart || todayString(), 1);
+      const inputDate = window.prompt("コピー先の開始日を YYYY-MM-DD で入力してください。", suggestedDate);
       if (inputDate === null) return;
 
       const newDate = inputDate.trim();
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate) || Number.isNaN(toDate(newDate).getTime())) {
+      if (!isValidDateString(newDate)) {
         window.alert("日付は YYYY-MM-DD の形式で入力してください。");
         return;
       }
@@ -4241,6 +4383,7 @@
         ...source,
         id: makeId("todo"),
         date: newDate,
+        endDate: dateOffset(newDate, durationDays),
         done: false
       };
 
@@ -4254,12 +4397,17 @@
 
     function updateEditFormVisibility() {
       const isEvent = els.editKind.value === "event";
-      els.editDateLabel.textContent = isEvent ? "日程" : "締切日";
+      els.editDateLabel.textContent = isEvent ? "開始日" : "締切日";
       els.editDeadlineTimeField.classList.toggle("hidden-field", isEvent);
+      els.editEndDateField.classList.toggle("hidden-field", !isEvent);
       els.editLocationField.classList.toggle("hidden-field", !isEvent);
       els.editStartTimeField.classList.toggle("hidden-field", !isEvent);
       els.editEndTimeField.classList.toggle("hidden-field", !isEvent);
       els.editImportanceField.classList.toggle("hidden-field", isEvent);
+      if (isEvent) {
+        const startDate = els.editDate.value || todayString();
+        els.editEndDate.value = normalizeEndDateForStart(startDate, els.editEndDate.value || startDate);
+      }
       if (els.editCertaintyField) {
         els.editCertaintyField.classList.toggle("hidden-field", !isEvent);
       }
@@ -4287,6 +4435,7 @@
       els.editDetail.value = todo.detail || "";
       els.editLocation.value = todo.location || "";
       els.editDate.value = todo.date;
+      els.editEndDate.value = (todo.kind || "todo") === "event" ? eventEndDate(todo) : "";
       els.editDeadlineTime.value = todo.deadlineTime || "";
       els.editStartTime.value = todo.startTime || "";
       els.editEndTime.value = todo.endTime || "";
@@ -4315,7 +4464,8 @@
       todo.title = title;
       todo.detail = els.editDetail.value.trim();
       todo.location = todo.kind === "event" ? els.editLocation.value.trim() : "";
-      todo.date = els.editDate.value || todayString();
+      todo.date = normalizeDateString(els.editDate.value || todayString());
+      todo.endDate = todo.kind === "event" ? normalizeEndDateForStart(todo.date, els.editEndDate.value || todo.date) : "";
       todo.startTime = todo.kind === "event" ? (els.editStartTime.value || "") : "";
       todo.endTime = todo.kind === "event" ? (els.editEndTime.value || "") : "";
       todo.deadlineTime = todo.kind === "event" ? "" : (els.editDeadlineTime.value || "");
@@ -4468,6 +4618,9 @@
       console.assert(["matrix", "month", "day", "category", "completed", "add", "manage", "settings", "timetable", "data"].includes(state.view), "view should be valid");
       console.assert(Array.isArray(state.certaintyOptions), "certainty options should exist");
       console.assert(typeof state.importanceColors === "object", "importance colors should exist");
+      console.assert(isEventOnDate({ kind: "event", date: "2026-05-01", endDate: "2026-05-03" }, "2026-05-02"), "multi-day events should appear inside their date range");
+      console.assert(!isEventOnDate({ kind: "event", date: "2026-05-01", endDate: "2026-05-03" }, "2026-05-04"), "multi-day events should not appear after their end date");
+      console.assert(eventTimeOnDate({ kind: "event", date: "2026-05-01", endDate: "2026-05-03", startTime: "10:00", endTime: "18:00" }, "2026-05-02").startTime === "00:00", "middle day of a multi-day timed event should start at midnight");
     }
 
     document.querySelectorAll("[data-view-button]").forEach(button => {
@@ -4508,6 +4661,24 @@
 
     els.todoKind.addEventListener("change", () => {
       updateTodoFormVisibility();
+    });
+
+    els.todoDate.addEventListener("change", () => {
+      if (els.todoKind.value === "event") {
+        const startDate = els.todoDate.value || todayString();
+        if (!els.todoEndDate.value || els.todoEndDate.value < startDate) {
+          els.todoEndDate.value = startDate;
+        }
+      }
+    });
+
+    els.editDate.addEventListener("change", () => {
+      if (els.editKind.value === "event") {
+        const startDate = els.editDate.value || todayString();
+        if (!els.editEndDate.value || els.editEndDate.value < startDate) {
+          els.editEndDate.value = startDate;
+        }
+      }
     });
 
     els.todoParent.addEventListener("change", () => {
@@ -4663,6 +4834,7 @@
     });
 
     els.todoDate.value = todayString();
+    els.todoEndDate.value = todayString();
     els.selectedDate.value = state.selectedDate;
 
     setInterval(() => {
@@ -4670,6 +4842,7 @@
       normalizeDateChange();
       if (before !== state.lastKnownToday) {
         els.todoDate.value = todayString();
+        if (!els.todoEndDate.value || els.todoEndDate.value < els.todoDate.value) els.todoEndDate.value = els.todoDate.value;
         renderAll();
       }
     }, 60 * 1000);
