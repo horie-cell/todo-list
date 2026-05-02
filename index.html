@@ -2341,9 +2341,56 @@
     </section>
   </div>
 
+
+
+  <div id="copyEventModal" class="modal-backdrop" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="copyEventTitle">
+      <div class="modal-head">
+        <h2 id="copyEventTitle">予定をコピー</h2>
+        <button id="closeCopyEventModal" class="modal-close">閉じる</button>
+      </div>
+
+      <div class="form">
+        <input id="copyEventSourceId" type="hidden" />
+        <p class="desc">同じ日の別時間にコピーする場合は、日付はそのままで開始時刻・終了時刻だけ変更してください。</p>
+
+        <div class="two">
+          <label>
+            コピー先の開始日
+            <input id="copyEventStartDate" type="date" />
+          </label>
+
+          <label>
+            コピー先の終了日
+            <input id="copyEventEndDate" type="date" />
+          </label>
+        </div>
+
+        <div class="two">
+          <label>
+            コピー先の開始時刻
+            <input id="copyEventStartTime" type="time" />
+          </label>
+
+          <label>
+            コピー先の終了時刻
+            <input id="copyEventEndTime" type="time" />
+          </label>
+        </div>
+
+        <div id="copyEventWarn" class="warn">開始日と終了日を正しく入力してください。</div>
+
+        <div class="actions">
+          <button id="saveCopiedEvent" class="primary">コピーを作成</button>
+          <button id="cancelCopyEvent" class="secondary">キャンセル</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v73";
-    const OLD_KEYS = ["todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v74";
+    const OLD_KEYS = ["todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2594,7 +2641,17 @@
       editMinutes: document.getElementById("editMinutes"),
       saveEditTodo: document.getElementById("saveEditTodo"),
       copyEditEvent: document.getElementById("copyEditEvent"),
-      deleteEditTodo: document.getElementById("deleteEditTodo")
+      deleteEditTodo: document.getElementById("deleteEditTodo"),
+      copyEventModal: document.getElementById("copyEventModal"),
+      closeCopyEventModal: document.getElementById("closeCopyEventModal"),
+      copyEventSourceId: document.getElementById("copyEventSourceId"),
+      copyEventStartDate: document.getElementById("copyEventStartDate"),
+      copyEventEndDate: document.getElementById("copyEventEndDate"),
+      copyEventStartTime: document.getElementById("copyEventStartTime"),
+      copyEventEndTime: document.getElementById("copyEventEndTime"),
+      copyEventWarn: document.getElementById("copyEventWarn"),
+      saveCopiedEvent: document.getElementById("saveCopiedEvent"),
+      cancelCopyEvent: document.getElementById("cancelCopyEvent")
     };
 
     // 授業編集パネルはbody直下に移動し、日別画面から開いても日別画面を保持する。
@@ -4368,28 +4425,63 @@
 
       const sourceStart = eventStartDate(source);
       const sourceEnd = eventEndDate(source);
-      const durationDays = dateDiffDays(sourceStart, sourceEnd);
-      const suggestedDate = dateOffset(sourceStart || todayString(), 1);
-      const inputDate = window.prompt("コピー先の開始日を YYYY-MM-DD で入力してください。", suggestedDate);
-      if (inputDate === null) return;
+      els.copyEventSourceId.value = source.id;
+      els.copyEventStartDate.value = sourceStart;
+      els.copyEventEndDate.value = sourceEnd;
+      els.copyEventStartDate.dataset.copyDurationDays = String(dateDiffDays(sourceStart, sourceEnd));
+      els.copyEventStartDate.dataset.lastCopyDate = sourceStart;
+      els.copyEventStartTime.value = source.startTime || "";
+      els.copyEventEndTime.value = source.endTime || "";
+      els.copyEventWarn.classList.remove("show");
+      els.copyEventModal.classList.add("show");
+      els.copyEventModal.setAttribute("aria-hidden", "false");
+    }
 
-      const newDate = inputDate.trim();
-      if (!isValidDateString(newDate)) {
-        window.alert("日付は YYYY-MM-DD の形式で入力してください。");
+    function closeCopyEventModal() {
+      els.copyEventModal.classList.remove("show");
+      els.copyEventModal.setAttribute("aria-hidden", "true");
+      els.copyEventWarn.classList.remove("show");
+    }
+
+    function syncCopyEventEndDate() {
+      const startDate = els.copyEventStartDate.value || todayString();
+      const durationDays = Math.max(0, Number(els.copyEventStartDate.dataset.copyDurationDays) || 0);
+      const previousStartDate = els.copyEventStartDate.dataset.lastCopyDate || startDate;
+      const previousAutoEndDate = isValidDateString(previousStartDate) ? dateOffset(previousStartDate, durationDays) : "";
+      const currentEndDate = els.copyEventEndDate.value || "";
+      if (!currentEndDate || currentEndDate < startDate || currentEndDate === previousAutoEndDate) {
+        els.copyEventEndDate.value = dateOffset(startDate, durationDays);
+      }
+      els.copyEventStartDate.dataset.lastCopyDate = startDate;
+    }
+
+    function saveCopiedEvent() {
+      const source = state.todos.find(item => item.id === els.copyEventSourceId.value && item.kind === "event");
+      if (!source) return;
+
+      const startDate = normalizeDateString(els.copyEventStartDate.value || eventStartDate(source));
+      const endDate = normalizeEndDateForStart(startDate, els.copyEventEndDate.value || startDate);
+
+      if (!isValidDateString(startDate) || !isValidDateString(endDate)) {
+        els.copyEventWarn.textContent = "開始日と終了日を正しく入力してください。";
+        els.copyEventWarn.classList.add("show");
         return;
       }
 
       const copied = {
         ...source,
         id: makeId("todo"),
-        date: newDate,
-        endDate: dateOffset(newDate, durationDays),
+        date: startDate,
+        endDate,
+        startTime: els.copyEventStartTime.value || "",
+        endTime: els.copyEventEndTime.value || "",
         done: false
       };
 
       state.todos.push(copied);
+      closeCopyEventModal();
       closeEditModal();
-      state.selectedDate = newDate;
+      state.selectedDate = startDate;
       state.view = "day";
       renderAll();
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -4814,6 +4906,14 @@
     els.editModal.addEventListener("click", (event) => {
       if (event.target === els.editModal) closeEditModal();
     });
+    els.closeCopyEventModal.addEventListener("click", closeCopyEventModal);
+    els.cancelCopyEvent.addEventListener("click", closeCopyEventModal);
+    els.saveCopiedEvent.addEventListener("click", saveCopiedEvent);
+    els.copyEventModal.addEventListener("click", (event) => {
+      if (event.target === els.copyEventModal) closeCopyEventModal();
+    });
+    els.copyEventStartDate.addEventListener("change", syncCopyEventEndDate);
+    els.copyEventEndDate.addEventListener("change", syncCopyEventEndDate);
     els.editKind.addEventListener("change", updateEditFormVisibility);
 
     els.editParent.addEventListener("change", () => {
