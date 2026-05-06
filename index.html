@@ -2078,6 +2078,21 @@
 
               <div class="two">
                 <label>
+                  開始日
+                  <input id="classStartDate" type="date" />
+                </label>
+
+                <label>
+                  表示間隔
+                  <select id="classRepeatMode">
+                    <option value="weekly">毎週</option>
+                    <option value="biweekly">隔週</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="two">
+                <label>
                   開始時刻
                   <input id="classStartTime" type="time" />
                 </label>
@@ -2384,8 +2399,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v75";
-    const OLD_KEYS = ["todo-calendar-board-v74", "todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v76";
+    const OLD_KEYS = ["todo-calendar-board-v75", "todo-calendar-board-v74", "todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2586,6 +2601,8 @@
       classTitle: document.getElementById("classTitle"),
       classTeacher: document.getElementById("classTeacher"),
       classRoom: document.getElementById("classRoom"),
+      classStartDate: document.getElementById("classStartDate"),
+      classRepeatMode: document.getElementById("classRepeatMode"),
       classStartTime: document.getElementById("classStartTime"),
       classEndTime: document.getElementById("classEndTime"),
       classColorPresetGrid: document.getElementById("classColorPresetGrid"),
@@ -2775,6 +2792,14 @@
       return ["日", "月", "火", "水", "木", "金", "土"][Number(index)] || "";
     }
 
+    function nextDateForWeekday(baseDateString, targetDay) {
+      const base = normalizeDateString(baseDateString);
+      const day = Number(targetDay);
+      if (day < 0 || day > 6) return base;
+      const offset = (day - weekdayIndex(base) + 7) % 7;
+      return dateOffset(base, offset);
+    }
+
     function normalizeTimetableSettings(settings) {
       const defaults = clone(initialState.timetableSettings);
       const rawCount = Number(settings?.periodCount ?? defaults.periodCount);
@@ -2805,11 +2830,34 @@
       return state.classes.find(item => Number(item.day) === Number(day) && Number(item.period) === Number(period));
     }
 
+    function classAnchorDate(classItem) {
+      if (!isValidDateString(classItem.startDate)) return "";
+      return nextDateForWeekday(classItem.startDate, Number(classItem.day));
+    }
+
+    function classOccursOnDate(classItem, dateString) {
+      const date = normalizeDateString(dateString);
+      const day = weekdayIndex(date);
+      if (day < 1 || day > 5) return false;
+      if (Number(classItem.day) !== day) return false;
+
+      const anchor = classAnchorDate(classItem);
+      if (!anchor) return true;
+      if (date < anchor) return false;
+      if (classItem.repeatMode === "biweekly") {
+        const diff = Math.round((toDate(date) - toDate(anchor)) / 86400000);
+        return diff % 14 === 0;
+      }
+      return true;
+    }
+
+    function classRepeatLabel(classItem) {
+      return classItem.repeatMode === "biweekly" ? "隔週" : "毎週";
+    }
+
     function classesForDate(dateString) {
-      const day = weekdayIndex(dateString);
-      if (day < 1 || day > 5) return [];
       return state.classes
-        .filter(item => Number(item.day) === day)
+        .filter(item => classOccursOnDate(item, dateString))
         .map(item => ({
           ...item,
           date: dateString,
@@ -2982,6 +3030,15 @@
       return { ...classItem, colorKey: matched?.id || "blue" };
     }
 
+    function normalizeClassItem(classItem, presets = state.classColorPresets) {
+      const colored = normalizeClassColor(classItem, presets);
+      return {
+        ...colored,
+        startDate: isValidDateString(colored.startDate) ? colored.startDate : "",
+        repeatMode: colored.repeatMode === "biweekly" ? "biweekly" : "weekly"
+      };
+    }
+
     function classPresetColor(colorKey) {
       const preset = state.classColorPresets.find(item => item.id === colorKey);
       return safeColor(preset?.color, "#bfdbfe");
@@ -3043,7 +3100,7 @@
         });
         loaded.todos = loaded.todos.map(({ minutes, ...todo }) => todo);
         loaded.classColorPresets = mergeClassColorPresets(loaded.classColorPresets);
-        loaded.classes = loaded.classes.map(classItem => normalizeClassColor(classItem, loaded.classColorPresets));
+        loaded.classes = loaded.classes.map(classItem => normalizeClassItem(classItem, loaded.classColorPresets));
         loaded.selectedDate = loaded.selectedDate || todayString();
         loaded.filterParentId = loaded.filterParentId || "all";
         loaded.filterChildId = loaded.filterChildId || "all";
@@ -3596,7 +3653,7 @@
           ? "border:2px solid " + classPresetColor(todo.colorKey)
           : "border:2px solid " + certaintyColor(todo.certaintyId) + "; background:" + certaintyColor(todo.certaintyId);
         const meta = todo.kind === "class"
-          ? `${todo.startTime}〜${todo.endTime}${todo.room ? "・" + todo.room : ""}`
+          ? `${todo.startTime}〜${todo.endTime}${todo.room ? "・" + todo.room : ""}・${classRepeatLabel(todo)}${todo.startDate ? "・開始 " + dateLabel(classAnchorDate(todo) || todo.startDate) : ""}`
           : `${timeText(todo)}${todo.location ? "・" + todo.location : ""}・${dateRangeLabel(todo)}・${certaintyLabel(todo.certaintyId)}`;
 
         return `
@@ -3853,7 +3910,7 @@
             <div class="tt-cell" data-action="edit-class" data-id="${escapeHtml(item.id)}">
               <div class="tt-card" style="background:${classPresetColor(item.colorKey)}">
                 <div class="tt-title">${escapeHtml(item.title || "無題")}</div>
-                <div class="tt-room">${escapeHtml(item.room || "教室未入力")}</div>
+                <div class="tt-room">${escapeHtml((item.room || "教室未入力") + (item.repeatMode === "biweekly" ? "・隔週" : ""))}</div>
               </div>
             </div>
           `;
@@ -3882,6 +3939,8 @@
       els.classTitle.value = "";
       els.classTeacher.value = "";
       els.classRoom.value = "";
+      els.classStartDate.value = nextDateForWeekday(state.selectedDate || todayString(), 1);
+      els.classRepeatMode.value = "weekly";
       const [start, end] = defaultPeriodTimes(1);
       els.classStartTime.value = start;
       els.classEndTime.value = end;
@@ -3898,6 +3957,8 @@
       els.classTitle.value = item.title || "";
       els.classTeacher.value = item.teacher || "";
       els.classRoom.value = item.room || "";
+      els.classStartDate.value = item.startDate || "";
+      els.classRepeatMode.value = item.repeatMode === "biweekly" ? "biweekly" : "weekly";
       els.classStartTime.value = item.startTime || defaultPeriodTimes(item.period)[0];
       els.classEndTime.value = item.endTime || defaultPeriodTimes(item.period)[1];
       renderClassColorPresetGrid(item.colorKey || "blue");
@@ -3917,6 +3978,8 @@
       els.classTitle.value = "";
       els.classTeacher.value = "";
       els.classRoom.value = "";
+      els.classStartDate.value = nextDateForWeekday(state.selectedDate || todayString(), day);
+      els.classRepeatMode.value = "weekly";
       const [start, end] = defaultPeriodTimes(period);
       els.classStartTime.value = start;
       els.classEndTime.value = end;
@@ -3981,13 +4044,20 @@
       if (!title) return;
 
       const id = els.classEditorId.value || makeId("class");
+      const day = Number(els.classDay.value);
+      const repeatMode = els.classRepeatMode.value === "biweekly" ? "biweekly" : "weekly";
+      const fallbackStartDate = nextDateForWeekday(state.selectedDate || todayString(), day);
+      const rawStartDate = isValidDateString(els.classStartDate.value) ? els.classStartDate.value : (repeatMode === "biweekly" ? fallbackStartDate : "");
+      const startDate = rawStartDate ? nextDateForWeekday(rawStartDate, day) : "";
       const data = {
         id,
-        day: Number(els.classDay.value),
+        day,
         period: Number(els.classPeriod.value),
         title,
         teacher: els.classTeacher.value.trim(),
         room: els.classRoom.value.trim(),
+        startDate,
+        repeatMode,
         startTime: els.classStartTime.value || defaultPeriodTimes(Number(els.classPeriod.value))[0],
         endTime: els.classEndTime.value || defaultPeriodTimes(Number(els.classPeriod.value))[1],
         colorKey: els.classColorPresetGrid.dataset.selectedColorKey || "blue"
@@ -4733,6 +4803,8 @@
       console.assert(isEventOnDate({ kind: "event", date: "2026-05-01", endDate: "2026-05-03" }, "2026-05-02"), "multi-day events should appear inside their date range");
       console.assert(!isEventOnDate({ kind: "event", date: "2026-05-01", endDate: "2026-05-03" }, "2026-05-04"), "multi-day events should not appear after their end date");
       console.assert(eventTimeOnDate({ kind: "event", date: "2026-05-01", endDate: "2026-05-03", startTime: "10:00", endTime: "18:00" }, "2026-05-02").startTime === "00:00", "middle day of a multi-day timed event should start at midnight");
+      console.assert(classOccursOnDate({ day: 1, startDate: "2026-05-04", repeatMode: "biweekly" }, "2026-05-18"), "biweekly class should appear two weeks after start date");
+      console.assert(!classOccursOnDate({ day: 1, startDate: "2026-05-04", repeatMode: "biweekly" }, "2026-05-11"), "biweekly class should not appear one week after start date");
     }
 
     document.querySelectorAll("[data-view-button]").forEach(button => {
@@ -4908,6 +4980,18 @@
       const [start, end] = defaultPeriodTimes(Number(els.classPeriod.value));
       els.classStartTime.value = start;
       els.classEndTime.value = end;
+    });
+
+    els.classDay.addEventListener("change", () => {
+      if (!els.classStartDate.value) {
+        els.classStartDate.value = nextDateForWeekday(state.selectedDate || todayString(), Number(els.classDay.value));
+      }
+    });
+
+    els.classRepeatMode.addEventListener("change", () => {
+      if (els.classRepeatMode.value === "biweekly" && !els.classStartDate.value) {
+        els.classStartDate.value = nextDateForWeekday(state.selectedDate || todayString(), Number(els.classDay.value));
+      }
     });
 
     els.periodCount.addEventListener("change", () => {
