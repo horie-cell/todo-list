@@ -2575,8 +2575,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v78";
-    const OLD_KEYS = ["todo-calendar-board-v77", "todo-calendar-board-v76", "todo-calendar-board-v75", "todo-calendar-board-v74", "todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v79";
+    const OLD_KEYS = ["todo-calendar-board-v78", "todo-calendar-board-v77", "todo-calendar-board-v76", "todo-calendar-board-v75", "todo-calendar-board-v74", "todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -3325,6 +3325,62 @@
 
     function clamp(value, min, max) {
       return Math.max(min, Math.min(max, value));
+    }
+
+    function signedPxForCalc(value) {
+      const number = Number(value) || 0;
+      return number < 0 ? ` - ${Math.abs(number).toFixed(2)}px` : ` + ${number.toFixed(2)}px`;
+    }
+
+    function timelineColumnStyle(column, columns) {
+      const safeColumns = Math.max(1, Number(columns) || 1);
+      if (safeColumns <= 1) return "";
+      const safeColumn = Math.max(0, Math.min(safeColumns - 1, Number(column) || 0));
+      const gapPx = 6;
+      const slotPercent = 100 / safeColumns;
+      const leftPercent = slotPercent * safeColumn;
+      const leftPx = 10 - (18 * safeColumn / safeColumns);
+      const widthPx = (18 / safeColumns) + gapPx;
+      return `left:calc(${leftPercent.toFixed(5)}%${signedPxForCalc(leftPx)}); right:auto; width:calc(${slotPercent.toFixed(5)}% - ${widthPx.toFixed(2)}px);`;
+    }
+
+    function layoutTimelineItems(items) {
+      const sorted = items
+        .map((item, index) => ({ ...item, layoutIndex: index }))
+        .sort((a, b) => a.layoutStart - b.layoutStart || a.layoutEnd - b.layoutEnd || a.layoutIndex - b.layoutIndex);
+
+      const result = [];
+      let cluster = [];
+      let clusterEnd = -Infinity;
+
+      function flushCluster() {
+        if (!cluster.length) return;
+        const columnEnds = [];
+        for (const item of cluster) {
+          let column = columnEnds.findIndex(end => end <= item.layoutStart);
+          if (column === -1) column = columnEnds.length;
+          columnEnds[column] = item.layoutEnd;
+          item.layoutColumn = column;
+        }
+        const columnCount = Math.max(1, columnEnds.length);
+        for (const item of cluster) {
+          item.layoutColumns = columnCount;
+          result.push(item);
+        }
+        cluster = [];
+        clusterEnd = -Infinity;
+      }
+
+      for (const item of sorted) {
+        if (cluster.length && item.layoutStart >= clusterEnd) {
+          flushCluster();
+        }
+        cluster.push(item);
+        clusterEnd = Math.max(clusterEnd, item.layoutEnd);
+      }
+      flushCluster();
+
+      return result.sort((a, b) => a.top - b.top || a.layoutColumn - b.layoutColumn || a.layoutIndex - b.layoutIndex);
     }
 
     function escapeHtml(value) {
@@ -4114,21 +4170,35 @@
         return `<div class="timeline-hour-line" style="top:${top}px"></div>`;
       }).join("");
 
-      const eventBlocks = timedEvents.map(todo => {
+      const timelineItems = timedEvents.map(todo => {
         const start = minutesFromTime(todo.startTime);
         const end = minutesFromTime(todo.endTime) ?? (start === null ? null : start + 60);
-        if (start === null) return "";
+        if (start === null) return null;
 
         const clippedStart = clamp(start, timelineStartMinutes, timelineEndMinutes);
         const clippedEnd = clamp(Math.max(end, start + 30), timelineStartMinutes, timelineEndMinutes);
-        if (clippedEnd <= timelineStartMinutes || clippedStart >= timelineEndMinutes) return "";
+        if (clippedEnd <= timelineStartMinutes || clippedStart >= timelineEndMinutes) return null;
 
         const top = ((clippedStart - timelineStartMinutes) / 60) * pxPerHour;
         const height = Math.max(28, ((clippedEnd - clippedStart) / 60) * pxPerHour);
+        const visualDurationMinutes = Math.max(clippedEnd - clippedStart, (height / pxPerHour) * 60);
+
+        return {
+          todo,
+          top,
+          height,
+          layoutStart: clippedStart,
+          layoutEnd: clippedStart + visualDurationMinutes
+        };
+      }).filter(Boolean);
+
+      const eventBlocks = layoutTimelineItems(timelineItems).map(item => {
+        const todo = item.todo;
         const action = todo.kind === "class" ? "open-class-inline" : "edit";
         const borderStyle = todo.kind === "class"
           ? "border:2px solid " + classPresetColor(todo.colorKey)
           : "border:2px solid " + certaintyColor(todo.certaintyId) + "; background:" + certaintyColor(todo.certaintyId);
+        const columnStyle = timelineColumnStyle(item.layoutColumn, item.layoutColumns);
         const meta = todo.kind === "class"
           ? `${todo.startTime}〜${todo.endTime}${todo.room ? "・" + todo.room : ""}・${classRepeatLabel(todo)}${overrideActive && dayOverride.weekday ? "・" + weekdayNameFromIndex(Number(dayOverride.weekday)) + "曜時間割" : ""}${todo.startDate ? "・開始 " + dateLabel(classAnchorDate(todo) || todo.startDate) : ""}`
           : `${timeText(todo)}${todo.location ? "・" + todo.location : ""}・${eventOccurrenceScheduleLabel(todo, state.selectedDate)}・${certaintyLabel(todo.certaintyId)}${todo.imageData ? "・画像あり" : ""}`;
@@ -4138,7 +4208,7 @@
             class="timeline-event-block ${todo.kind === "class" ? "class-item" : ""}"
             data-action="${action}"
             data-id="${escapeHtml(todo.id)}"
-            style="top:${top}px; height:${height}px; ${borderStyle}"
+            style="top:${item.top}px; height:${item.height}px; ${columnStyle} ${borderStyle}"
           >
             <div class="timeline-event-title">${escapeHtml(todo.title)}</div>
             <div class="timeline-event-meta">${escapeHtml(meta)}</div>
@@ -4150,7 +4220,7 @@
         ${allDayHtml}
         <div class="card" style="box-shadow:none; border:1px solid var(--line); padding:12px;">
           <h2>24時間表示</h2>
-          <p class="desc">開始時刻と終了時刻に合わせて、予定と授業を縦方向の位置と高さで表示します。</p>
+          <p class="desc">開始時刻と終了時刻に合わせて表示します。時間帯が重なる予定や授業は横に並べます。</p>
           <div class="timeline-controls">
             <button class="toggle-chip ${overrideActive ? "active" : ""}" data-action="open-day-override">
               振替${overrideActive ? "：" + escapeHtml(overrideSummary) : ""}
