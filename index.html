@@ -547,6 +547,62 @@
       word-break: break-word;
     }
 
+    .attached-image {
+      margin: 8px 0 2px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #f8fafc;
+      max-width: 260px;
+    }
+
+    .attached-image img {
+      display: block;
+      width: 100%;
+      max-height: 180px;
+      object-fit: contain;
+      background: white;
+    }
+
+    .image-preview-box {
+      display: none;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 8px;
+      background: #f8fafc;
+    }
+
+    .image-preview-box.show {
+      display: block;
+    }
+
+    .image-preview-box img {
+      display: block;
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: white;
+    }
+
+    .image-tools {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      flex-wrap: wrap;
+    }
+
+    .repeat-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: -5px;
+    }
+
+
     .todo-meta {
       display: flex;
       flex-wrap: wrap;
@@ -1991,6 +2047,25 @@
               </label>
             </div>
 
+            <div id="todoRepeatFields" class="two">
+              <label>
+                繰り返し
+                <select id="todoRepeatMode">
+                  <option value="none">なし</option>
+                  <option value="daily">毎日</option>
+                  <option value="weekly">毎週</option>
+                  <option value="biweekly">隔週</option>
+                  <option value="monthly">毎月</option>
+                </select>
+              </label>
+
+              <label id="todoRepeatUntilField">
+                繰り返し終了日
+                <input id="todoRepeatUntil" type="date" />
+              </label>
+            </div>
+            <p id="todoRepeatNote" class="repeat-note">終了日を空欄にすると、繰り返しを期限なしで表示します。</p>
+
             <label id="todoParentField">
               親カテゴリ
               <select id="todoParent"></select>
@@ -2010,6 +2085,13 @@
               詳細
               <textarea id="todoDetail" placeholder="内容、提出場所、注意点など"></textarea>
             </label>
+
+            <label>
+              参考画像
+              <input id="todoImageFile" type="file" accept="image/*" />
+            </label>
+            <div id="todoImagePreview" class="image-preview-box"></div>
+            <button id="removeTodoImage" class="secondary hidden-field" type="button">参考画像を削除</button>
 
             <label id="eventLocationField">
               場所
@@ -2333,6 +2415,24 @@
           </label>
         </div>
 
+        <div id="editRepeatFields" class="two">
+          <label>
+            繰り返し
+            <select id="editRepeatMode">
+              <option value="none">なし</option>
+              <option value="daily">毎日</option>
+              <option value="weekly">毎週</option>
+              <option value="biweekly">隔週</option>
+              <option value="monthly">毎月</option>
+            </select>
+          </label>
+
+          <label id="editRepeatUntilField">
+            繰り返し終了日
+            <input id="editRepeatUntil" type="date" />
+          </label>
+        </div>
+
         <label>
           親カテゴリ
           <select id="editParent"></select>
@@ -2352,6 +2452,13 @@
           詳細
           <textarea id="editDetail"></textarea>
         </label>
+
+        <label>
+          参考画像
+          <input id="editImageFile" type="file" accept="image/*" />
+        </label>
+        <div id="editImagePreview" class="image-preview-box"></div>
+        <button id="removeEditImage" class="secondary hidden-field" type="button">参考画像を削除</button>
 
         <label id="editLocationField">
           場所
@@ -2468,8 +2575,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v77";
-    const OLD_KEYS = ["todo-calendar-board-v76", "todo-calendar-board-v75", "todo-calendar-board-v74", "todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v78";
+    const OLD_KEYS = ["todo-calendar-board-v77", "todo-calendar-board-v76", "todo-calendar-board-v75", "todo-calendar-board-v74", "todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -2593,6 +2700,8 @@
     };
 
     let state = loadState();
+    let pendingTodoImageData = "";
+    let pendingEditImageData = "";
 
     const els = {
       todoKind: document.getElementById("todoKind"),
@@ -2602,6 +2711,9 @@
       todoChild: document.getElementById("todoChild"),
       todoTitle: document.getElementById("todoTitle"),
       todoDetail: document.getElementById("todoDetail"),
+      todoImageFile: document.getElementById("todoImageFile"),
+      todoImagePreview: document.getElementById("todoImagePreview"),
+      removeTodoImage: document.getElementById("removeTodoImage"),
       eventLocationField: document.getElementById("eventLocationField"),
       todoLocation: document.getElementById("todoLocation"),
       todoDateField: document.getElementById("todoDateField"),
@@ -2619,6 +2731,11 @@
       todoImportance: document.getElementById("todoImportance"),
       todoCertaintyField: document.getElementById("todoCertaintyField"),
       todoCertainty: document.getElementById("todoCertainty"),
+      todoRepeatFields: document.getElementById("todoRepeatFields"),
+      todoRepeatMode: document.getElementById("todoRepeatMode"),
+      todoRepeatUntilField: document.getElementById("todoRepeatUntilField"),
+      todoRepeatUntil: document.getElementById("todoRepeatUntil"),
+      todoRepeatNote: document.getElementById("todoRepeatNote"),
       todoWarn: document.getElementById("todoWarn"),
       addViewTitle: document.getElementById("addViewTitle"),
       addTodo: document.getElementById("addTodo"),
@@ -2699,6 +2816,9 @@
       editChild: document.getElementById("editChild"),
       editTitleInput: document.getElementById("editTitleInput"),
       editDetail: document.getElementById("editDetail"),
+      editImageFile: document.getElementById("editImageFile"),
+      editImagePreview: document.getElementById("editImagePreview"),
+      removeEditImage: document.getElementById("removeEditImage"),
       editLocationField: document.getElementById("editLocationField"),
       editLocation: document.getElementById("editLocation"),
       editDateField: document.getElementById("editDateField"),
@@ -2716,6 +2836,10 @@
       editImportance: document.getElementById("editImportance"),
       editCertaintyField: document.getElementById("editCertaintyField"),
       editCertainty: document.getElementById("editCertainty"),
+      editRepeatFields: document.getElementById("editRepeatFields"),
+      editRepeatMode: document.getElementById("editRepeatMode"),
+      editRepeatUntilField: document.getElementById("editRepeatUntilField"),
+      editRepeatUntil: document.getElementById("editRepeatUntil"),
       saveEditTodo: document.getElementById("saveEditTodo"),
       copyEditEvent: document.getElementById("copyEditEvent"),
       deleteEditTodo: document.getElementById("deleteEditTodo"),
@@ -3027,6 +3151,119 @@
       return "時刻未設定";
     }
 
+
+    function normalizeEventRepeatMode(value) {
+      return ["daily", "weekly", "biweekly", "monthly"].includes(String(value || "")) ? String(value) : "none";
+    }
+
+    function eventRepeatMode(todo) {
+      if ((todo.kind || "todo") !== "event") return "none";
+      return normalizeEventRepeatMode(todo.repeatMode);
+    }
+
+    function normalizeRepeatUntil(value, startDate) {
+      if (!isValidDateString(value)) return "";
+      const start = normalizeDateString(startDate || todayString());
+      return value < start ? "" : String(value);
+    }
+
+    function eventRepeatUntil(todo) {
+      return normalizeRepeatUntil(todo.repeatUntil, eventStartDate(todo));
+    }
+
+    function eventRepeatLabel(todo) {
+      const mode = eventRepeatMode(todo);
+      const labels = {
+        none: "なし",
+        daily: "毎日",
+        weekly: "毎週",
+        biweekly: "隔週",
+        monthly: "毎月"
+      };
+      if (mode === "none") return "なし";
+      const until = eventRepeatUntil(todo);
+      return labels[mode] + (until ? "・" + dateLabel(until) + "まで" : "・期限なし");
+    }
+
+    function eventScheduleLabel(todo) {
+      const base = dateRangeLabel(todo);
+      return eventRepeatMode(todo) === "none" ? base : base + "・繰り返し: " + eventRepeatLabel(todo);
+    }
+
+    function eventOccurrenceScheduleLabel(todo, dateString) {
+      const range = eventOccurrenceRangeOnDate(todo, dateString);
+      const base = range
+        ? (range.startDate === range.endDate ? dateLabel(range.startDate) : dateLabel(range.startDate) + "〜" + dateLabel(range.endDate))
+        : dateRangeLabel(todo);
+      return eventRepeatMode(todo) === "none" ? base : base + "・繰り返し: " + eventRepeatLabel(todo);
+    }
+
+    function addMonthsKeepingDay(dateString, months) {
+      const base = toDate(normalizeDateString(dateString));
+      const wantedDay = base.getDate();
+      const target = new Date(base.getFullYear(), base.getMonth() + months, 1, 12, 0, 0, 0);
+      const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0, 12).getDate();
+      target.setDate(Math.min(wantedDay, lastDay));
+      return toDateString(target);
+    }
+
+    function eventOccurrenceRangeOnDate(todo, dateString) {
+      if ((todo.kind || "todo") !== "event") return null;
+      const date = normalizeDateString(dateString);
+      const start = eventStartDate(todo);
+      const end = eventEndDate(todo);
+      const durationDays = dateDiffDays(start, end);
+      const mode = eventRepeatMode(todo);
+
+      if (mode === "none") {
+        return start <= date && date <= end ? { startDate: start, endDate: end } : null;
+      }
+
+      if (date < start) return null;
+      const until = eventRepeatUntil(todo);
+      if (until && date > dateOffset(until, durationDays)) return null;
+      const minStart = dateOffset(date, -durationDays);
+
+      function validOccurrence(occStart) {
+        if (!isValidDateString(occStart)) return null;
+        if (occStart < start) return null;
+        if (until && occStart > until) return null;
+        const occEnd = dateOffset(occStart, durationDays);
+        return occStart <= date && date <= occEnd ? { startDate: occStart, endDate: occEnd } : null;
+      }
+
+      if (mode === "daily") {
+        return validOccurrence(date) || validOccurrence(minStart);
+      }
+
+      if (mode === "weekly" || mode === "biweekly") {
+        const step = mode === "weekly" ? 7 : 14;
+        const maxDiff = dateDiffDays(start, date);
+        const minDiff = Math.max(0, dateDiffDays(start, minStart));
+        const firstK = Math.max(0, Math.ceil(minDiff / step) - 1);
+        const lastK = Math.floor(maxDiff / step) + 1;
+        for (let k = firstK; k <= lastK; k += 1) {
+          const result = validOccurrence(dateOffset(start, k * step));
+          if (result) return result;
+        }
+        return null;
+      }
+
+      if (mode === "monthly") {
+        let index = 0;
+        let occStart = start;
+        while (occStart <= date) {
+          const result = validOccurrence(occStart);
+          if (result) return result;
+          index += 1;
+          if (index > 600) break;
+          occStart = addMonthsKeepingDay(start, index);
+        }
+      }
+
+      return null;
+    }
+
     function eventStartDate(todo) {
       return normalizeDateString(todo.date);
     }
@@ -3036,9 +3273,7 @@
     }
 
     function isEventOnDate(todo, dateString) {
-      if ((todo.kind || "todo") !== "event") return false;
-      const date = normalizeDateString(dateString);
-      return eventStartDate(todo) <= date && date <= eventEndDate(todo);
+      return Boolean(eventOccurrenceRangeOnDate(todo, dateString));
     }
 
     function eventTimeOnDate(todo, dateString) {
@@ -3046,23 +3281,24 @@
         return { startTime: todo.startTime || "", endTime: todo.endTime || "" };
       }
       const date = normalizeDateString(dateString);
-      const startDate = eventStartDate(todo);
-      const endDate = eventEndDate(todo);
-      if (startDate === endDate || !todo.startTime) {
+      const range = eventOccurrenceRangeOnDate(todo, date);
+      if (!range) return { startTime: "", endTime: "" };
+      if (range.startDate === range.endDate || !todo.startTime) {
         return { startTime: todo.startTime || "", endTime: todo.endTime || "" };
       }
-      if (date === startDate) {
+      if (date === range.startDate) {
         return { startTime: todo.startTime || "00:00", endTime: "24:00" };
       }
-      if (date === endDate) {
+      if (date === range.endDate) {
         return { startTime: "00:00", endTime: todo.endTime || "24:00" };
       }
       return { startTime: "00:00", endTime: "24:00" };
     }
 
     function timelineEventForDate(todo, dateString) {
+      const range = eventOccurrenceRangeOnDate(todo, dateString);
       const times = eventTimeOnDate(todo, dateString);
-      return { ...todo, startTime: times.startTime, endTime: times.endTime };
+      return { ...todo, date: range?.startDate || todo.date, endDate: range?.endDate || todo.endDate, startTime: times.startTime, endTime: times.endTime };
     }
 
     function dateRangeLabel(todo) {
@@ -3100,6 +3336,61 @@
         .replaceAll("'", "&#039;");
     }
 
+    function safeImageSrc(value) {
+      const text = String(value || "");
+      return /^data:image\/(png|jpe?g|webp|gif);base64,[a-zA-Z0-9+/=]+$/.test(text) ? text : "";
+    }
+
+    function attachedImageHtml(todo) {
+      const src = safeImageSrc(todo.imageData);
+      if (!src) return "";
+      return `<div class="attached-image"><img src="${escapeHtml(src)}" alt="参考画像" loading="lazy" /></div>`;
+    }
+
+    function renderImagePreview(container, imageData) {
+      const src = safeImageSrc(imageData);
+      if (!container) return;
+      container.classList.toggle("show", Boolean(src));
+      container.innerHTML = src
+        ? `<img src="${escapeHtml(src)}" alt="参考画像プレビュー" /><div class="image-tools"><span>参考画像あり</span><span>保存容量を抑えるため自動で圧縮します。</span></div>`
+        : "";
+    }
+
+    function setAddImageData(imageData) {
+      pendingTodoImageData = safeImageSrc(imageData);
+      renderImagePreview(els.todoImagePreview, pendingTodoImageData);
+      if (els.removeTodoImage) els.removeTodoImage.classList.toggle("hidden-field", !pendingTodoImageData);
+    }
+
+    function setEditImageData(imageData) {
+      pendingEditImageData = safeImageSrc(imageData);
+      renderImagePreview(els.editImagePreview, pendingEditImageData);
+      if (els.removeEditImage) els.removeEditImage.classList.toggle("hidden-field", !pendingEditImageData);
+    }
+
+    function readImageFileAsDataUrl(file, onDone) {
+      if (!file || !String(file.type || "").startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const maxSide = 1200;
+          const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+          const width = Math.max(1, Math.round(img.width * scale));
+          const height = Math.max(1, Math.round(img.height * scale));
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const context = canvas.getContext("2d");
+          context.drawImage(img, 0, 0, width, height);
+          onDone(canvas.toDataURL("image/jpeg", 0.78));
+        };
+        img.onerror = () => onDone("");
+        img.src = String(reader.result || "");
+      };
+      reader.readAsDataURL(file);
+    }
+
     function normalizeSearchText(value) {
       return String(value || "")
         .normalize("NFKC")
@@ -3119,6 +3410,8 @@
         todo.date,
         todo.endDate,
         dateRangeLabel(todo),
+        todo.kind === "event" ? eventRepeatLabel(todo) : "",
+        todo.imageData ? "参考画像 画像 添付" : "",
         todo.startTime,
         todo.endTime,
         todo.deadlineTime,
@@ -3252,6 +3545,8 @@
           const certaintyId = kind === "event"
             ? (todo.certaintyId === "candidate" ? "uncertain" : (todo.certaintyId || "confirmed"))
             : "";
+          const repeatMode = kind === "event" ? normalizeEventRepeatMode(todo.repeatMode) : "none";
+          const repeatUntil = kind === "event" && repeatMode !== "none" ? normalizeRepeatUntil(todo.repeatUntil, date) : "";
           return {
             ...todo,
             kind,
@@ -3262,7 +3557,10 @@
             endTime: todo.endTime || "",
             deadlineTime: todo.deadlineTime || "",
             location: todo.location || "",
-            certaintyId
+            certaintyId,
+            repeatMode,
+            repeatUntil,
+            imageData: safeImageSrc(todo.imageData)
           };
         });
         loaded.todos = loaded.todos.map(({ minutes, ...todo }) => todo);
@@ -3568,6 +3866,9 @@
       els.eventStartTimeField.classList.toggle("hidden-field", !isEvent);
       els.eventEndTimeField.classList.toggle("hidden-field", !isEvent);
       els.todoCertaintyField.classList.toggle("hidden-field", !isEvent);
+      els.todoRepeatFields.classList.toggle("hidden-field", !isEvent);
+      els.todoRepeatNote.classList.toggle("hidden-field", !isEvent);
+      els.todoRepeatUntilField.classList.toggle("hidden-field", !isEvent || els.todoRepeatMode.value === "none");
       if (isEvent) {
         const startDate = els.todoDate.value || todayString();
         els.todoEndDate.value = normalizeEndDateForStart(startDate, els.todoEndDate.value || startDate);
@@ -3694,6 +3995,8 @@
               <p class="mini-meta">
                 <span class="importance-badge" style="background:${importanceColor(importanceText)}">${escapeHtml(importanceText)}</span>
                 ${todo.kind === "event" || isCarryOver ? `<span class="certainty-badge">${escapeHtml(isCarryOver ? "期限切れ" : certainty)}</span>` : ""}
+                ${todo.kind === "event" && eventRepeatMode(todo) !== "none" ? `<span class="badge">${escapeHtml(eventRepeatLabel(todo))}</span>` : ""}
+                ${todo.imageData ? `<span class="badge">画像</span>` : ""}
               </p>
             </div>
             <button class="small-btn" data-action="delete" data-id="${escapeHtml(todo.id)}" title="削除">×</button>
@@ -3722,13 +4025,15 @@
               <div class="todo-main task-clickable" data-action="edit" data-id="${escapeHtml(todo.id)}">
                 <p class="todo-title ${isDone ? "done" : ""} ${isCarryOver ? "overdue" : ""}">${escapeHtml(todo.title)}</p>
                 <p class="todo-detail">${escapeHtml(todo.detail || "詳細なし")}</p>
+                ${attachedImageHtml(todo)}
                 <div class="todo-meta">
                   <span class="kind-badge">${escapeHtml(kindLabel(todo.kind))}</span>
                   <span class="badge">${escapeHtml(category?.label || "カテゴリ不明")}</span>
-                  <span class="badge">${escapeHtml(isCarryOver ? "元の締切: " + deadlineText(todo) : (todo.kind === "event" ? dateLabel(todo.date) : "締切: " + deadlineText(todo)))}</span>
+                  <span class="badge">${escapeHtml(isCarryOver ? "元の締切: " + deadlineText(todo) : (todo.kind === "event" ? eventScheduleLabel(todo) : "締切: " + deadlineText(todo)))}</span>
                   ${todo.kind === "event" ? `<span class="badge">${escapeHtml(timeText(todo))}</span>${todo.location ? `<span class="badge">${escapeHtml(todo.location)}</span>` : ""}` : ""}
                   ${todo.kind !== "event" ? `<span class="importance-badge" style="background:${importanceColor(isCarryOver ? "高" : todo.importance)}">重要度: ${isCarryOver ? "高" : escapeHtml(todo.importance)}</span>` : ""}
                   ${todo.kind === "event" || isCarryOver ? `<span class="certainty-badge" style="${todo.kind === "event" ? "border-color:" + certaintyColor(todo.certaintyId) + "; background:" + certaintyColor(todo.certaintyId) : ""}">${escapeHtml(isCarryOver ? "期限切れ" : certaintyLabel(todo.certaintyId))}</span>` : ""}
+                  ${todo.imageData ? `<span class="badge">参考画像あり</span>` : ""}
                 </div>
               </div>
             </div>
@@ -3771,11 +4076,13 @@
               <div class="todo-main task-clickable" data-action="edit" data-id="${escapeHtml(todo.id)}">
                 <p class="todo-title">${escapeHtml(todo.title)}</p>
                 <p class="todo-detail">${escapeHtml(todo.detail || "詳細なし")}</p>
+                ${attachedImageHtml(todo)}
                 <div class="todo-meta">
                   <span class="kind-badge">予定</span>
-                  <span class="badge">${escapeHtml(dateRangeLabel(todo))}</span>
+                  <span class="badge">${escapeHtml(eventOccurrenceScheduleLabel(todo, state.selectedDate))}</span>
                   ${todo.location ? `<span class="badge">${escapeHtml(todo.location)}</span>` : ""}
                   <span class="certainty-badge">${escapeHtml(certaintyLabel(todo.certaintyId))}</span>
+                  ${todo.imageData ? `<span class="badge">参考画像あり</span>` : ""}
                 </div>
               </div>
               <div class="card-actions">
@@ -3824,7 +4131,7 @@
           : "border:2px solid " + certaintyColor(todo.certaintyId) + "; background:" + certaintyColor(todo.certaintyId);
         const meta = todo.kind === "class"
           ? `${todo.startTime}〜${todo.endTime}${todo.room ? "・" + todo.room : ""}・${classRepeatLabel(todo)}${overrideActive && dayOverride.weekday ? "・" + weekdayNameFromIndex(Number(dayOverride.weekday)) + "曜時間割" : ""}${todo.startDate ? "・開始 " + dateLabel(classAnchorDate(todo) || todo.startDate) : ""}`
-          : `${timeText(todo)}${todo.location ? "・" + todo.location : ""}・${dateRangeLabel(todo)}・${certaintyLabel(todo.certaintyId)}`;
+          : `${timeText(todo)}${todo.location ? "・" + todo.location : ""}・${eventOccurrenceScheduleLabel(todo, state.selectedDate)}・${certaintyLabel(todo.certaintyId)}${todo.imageData ? "・画像あり" : ""}`;
 
         return `
           <div
@@ -4551,6 +4858,9 @@
 
       els.todoWarn.classList.remove("show");
 
+      const startDate = normalizeDateString(els.todoDate.value || todayString());
+      const repeatMode = kind === "event" ? normalizeEventRepeatMode(els.todoRepeatMode.value) : "none";
+
       state.todos.push({
         id: makeId("todo"),
         kind,
@@ -4559,13 +4869,16 @@
         title,
         detail: els.todoDetail.value.trim(),
         location: kind === "event" ? els.todoLocation.value.trim() : "",
-        date: normalizeDateString(els.todoDate.value || todayString()),
-        endDate: kind === "event" ? normalizeEndDateForStart(els.todoDate.value || todayString(), els.todoEndDate.value || els.todoDate.value || todayString()) : "",
+        date: startDate,
+        endDate: kind === "event" ? normalizeEndDateForStart(startDate, els.todoEndDate.value || startDate) : "",
         startTime: kind === "event" ? (els.todoStartTime.value || "") : "",
         endTime: kind === "event" ? (els.todoEndTime.value || "") : "",
         deadlineTime: kind === "event" ? "" : (els.todoDeadlineTime.value || ""),
         importance: kind === "event" ? "中" : els.todoImportance.value,
         certaintyId: kind === "event" ? (els.todoCertainty.value || "confirmed") : "",
+        repeatMode,
+        repeatUntil: kind === "event" && repeatMode !== "none" ? normalizeRepeatUntil(els.todoRepeatUntil.value, startDate) : "",
+        imageData: pendingTodoImageData,
         done: false
       });
 
@@ -4577,6 +4890,10 @@
       els.todoEndTime.value = "";
       els.todoDeadlineTime.value = "";
       els.todoCertainty.value = "confirmed";
+      els.todoRepeatMode.value = "none";
+      els.todoRepeatUntil.value = "";
+      setAddImageData("");
+      if (els.todoImageFile) els.todoImageFile.value = "";
       state.view = kind === "event" ? "day" : "matrix";
       if (kind === "event") state.selectedDate = normalizeDateString(els.todoDate.value || todayString());
       renderAll();
@@ -4830,6 +5147,8 @@
       els.editStartTimeField.classList.toggle("hidden-field", !isEvent);
       els.editEndTimeField.classList.toggle("hidden-field", !isEvent);
       els.editImportanceField.classList.toggle("hidden-field", isEvent);
+      els.editRepeatFields.classList.toggle("hidden-field", !isEvent);
+      els.editRepeatUntilField.classList.toggle("hidden-field", !isEvent || els.editRepeatMode.value === "none");
       if (isEvent) {
         const startDate = els.editDate.value || todayString();
         els.editEndDate.value = normalizeEndDateForStart(startDate, els.editEndDate.value || startDate);
@@ -4867,6 +5186,12 @@
       els.editEndTime.value = todo.endTime || "";
       els.editImportance.value = todo.importance;
       els.editCertainty.value = todo.certaintyId || "confirmed";
+      els.editRepeatMode.value = (todo.kind || "todo") === "event" ? eventRepeatMode(todo) : "none";
+      els.editRepeatUntil.value = (todo.kind || "todo") === "event" ? eventRepeatUntil(todo) : "";
+      pendingEditImageData = safeImageSrc(todo.imageData);
+      setEditImageData(pendingEditImageData);
+      if (els.editImageFile) els.editImageFile.value = "";
+      updateEditFormVisibility();
       els.editModal.classList.add("show");
       els.editModal.setAttribute("aria-hidden", "false");
     }
@@ -4896,6 +5221,9 @@
       todo.deadlineTime = todo.kind === "event" ? "" : (els.editDeadlineTime.value || "");
       todo.importance = todo.kind === "event" ? "中" : els.editImportance.value;
       todo.certaintyId = todo.kind === "event" ? (els.editCertainty.value || "confirmed") : "";
+      todo.repeatMode = todo.kind === "event" ? normalizeEventRepeatMode(els.editRepeatMode.value) : "none";
+      todo.repeatUntil = todo.kind === "event" && todo.repeatMode !== "none" ? normalizeRepeatUntil(els.editRepeatUntil.value, todo.date) : "";
+      todo.imageData = pendingEditImageData;
 
       closeEditModal();
       renderAll();
@@ -5051,6 +5379,9 @@
       console.assert(classOccursOnDate({ day: 1, startDate: "2026-05-04", repeatMode: "biweekly" }, "2026-05-18"), "biweekly class should appear two weeks after start date");
       console.assert(!classOccursOnDate({ day: 1, startDate: "2026-05-04", repeatMode: "biweekly" }, "2026-05-11"), "biweekly class should not appear one week after start date");
       console.assert(timetableOccurrenceDateForDate("2026-05-07", 1) === "2026-05-04", "Thursday override to Monday should use Monday in the same week");
+      console.assert(isEventOnDate({ kind: "event", date: "2026-05-01", endDate: "2026-05-01", repeatMode: "weekly" }, "2026-05-15"), "weekly event should repeat");
+      console.assert(!isEventOnDate({ kind: "event", date: "2026-05-01", endDate: "2026-05-01", repeatMode: "weekly", repeatUntil: "2026-05-08" }, "2026-05-15"), "weekly event should stop after repeat end date");
+      console.assert(safeImageSrc("data:image/jpeg;base64,AAAA") !== "", "image data URL should be accepted");
     }
 
     document.querySelectorAll("[data-view-button]").forEach(button => {
@@ -5091,6 +5422,26 @@
 
     els.todoKind.addEventListener("change", () => {
       updateTodoFormVisibility();
+    });
+
+    els.todoRepeatMode.addEventListener("change", updateTodoFormVisibility);
+    els.editRepeatMode.addEventListener("change", updateEditFormVisibility);
+
+    els.todoImageFile.addEventListener("change", () => {
+      const file = els.todoImageFile.files?.[0];
+      readImageFileAsDataUrl(file, setAddImageData);
+    });
+    els.removeTodoImage.addEventListener("click", () => {
+      setAddImageData("");
+      els.todoImageFile.value = "";
+    });
+    els.editImageFile.addEventListener("change", () => {
+      const file = els.editImageFile.files?.[0];
+      readImageFileAsDataUrl(file, setEditImageData);
+    });
+    els.removeEditImage.addEventListener("click", () => {
+      setEditImageData("");
+      els.editImageFile.value = "";
     });
 
     els.todoDate.addEventListener("change", () => {
@@ -5293,6 +5644,8 @@
 
     els.todoDate.value = todayString();
     els.todoEndDate.value = todayString();
+    setAddImageData("");
+    setEditImageData("");
     els.selectedDate.value = state.selectedDate;
 
     setInterval(() => {
