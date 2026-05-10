@@ -1613,6 +1613,39 @@
       white-space: nowrap;
     }
 
+    .month-mini.month-span {
+      position: relative;
+      z-index: 2;
+      min-height: 18px;
+      border-radius: 999px;
+    }
+
+    .month-mini.month-span-start {
+      margin-right: -5px;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .month-mini.month-span-middle {
+      margin-left: -5px;
+      margin-right: -5px;
+      border-radius: 0;
+    }
+
+    .month-mini.month-span-end {
+      margin-left: -5px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .month-mini.month-span-single {
+      border-radius: 999px;
+    }
+
+    .month-mini-inner.empty-label {
+      visibility: hidden;
+    }
+
     .task-clickable {
       cursor: pointer;
     }
@@ -2835,8 +2868,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v81";
-    const OLD_KEYS = ["todo-calendar-board-v80", "todo-calendar-board-v79", "todo-calendar-board-v78", "todo-calendar-board-v77", "todo-calendar-board-v76", "todo-calendar-board-v75", "todo-calendar-board-v74", "todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v82";
+    const OLD_KEYS = ["todo-calendar-board-v81", "todo-calendar-board-v80", "todo-calendar-board-v79", "todo-calendar-board-v78", "todo-calendar-board-v77", "todo-calendar-board-v76", "todo-calendar-board-v75", "todo-calendar-board-v74", "todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -4051,6 +4084,49 @@
       return `border:1px solid ${color}; background:${color}; color:#0f172a;`;
     }
 
+    function monthSpanRangeForEntry(entry, dateString) {
+      const todo = entry.todo;
+      if ((todo.kind || "todo") !== "event" || entry.isCarryOver) return null;
+      const range = eventOccurrenceRangeOnDate(todo, dateString);
+      if (!range || range.startDate === range.endDate) return null;
+      return range;
+    }
+
+    function monthSpanInfoForEntry(entry, dateString) {
+      const range = monthSpanRangeForEntry(entry, dateString);
+      if (!range) return { className: "", showTitle: true };
+      const dayOfWeek = toDate(dateString).getDay();
+      const connectsPrev = range.startDate < dateString && dayOfWeek !== 0;
+      const connectsNext = dateString < range.endDate && dayOfWeek !== 6;
+      let segmentClass = "month-span-single";
+      if (!connectsPrev && connectsNext) segmentClass = "month-span-start";
+      if (connectsPrev && connectsNext) segmentClass = "month-span-middle";
+      if (connectsPrev && !connectsNext) segmentClass = "month-span-end";
+      return {
+        className: "month-span " + segmentClass,
+        showTitle: !connectsPrev
+      };
+    }
+
+    function compareMonthEntries(a, b, dateString) {
+      const spanA = monthSpanRangeForEntry(a, dateString);
+      const spanB = monthSpanRangeForEntry(b, dateString);
+      if (Boolean(spanA) !== Boolean(spanB)) return spanA ? -1 : 1;
+      if (spanA && spanB) {
+        const startCompare = spanA.startDate.localeCompare(spanB.startDate);
+        if (startCompare) return startCompare;
+        const endCompare = spanB.endDate.localeCompare(spanA.endDate);
+        if (endCompare) return endCompare;
+        return String(a.todo.id || "").localeCompare(String(b.todo.id || ""));
+      }
+      if (a.isCarryOver !== b.isCarryOver) return a.isCarryOver ? -1 : 1;
+      const timeA = a.todo.kind === "event" ? (a.todo.startTime || "") : (a.todo.deadlineTime || "");
+      const timeB = b.todo.kind === "event" ? (b.todo.startTime || "") : (b.todo.deadlineTime || "");
+      const timeCompare = String(timeA || "").localeCompare(String(timeB || ""));
+      if (timeCompare) return timeCompare;
+      return importanceRank(b.todo.importance) - importanceRank(a.todo.importance);
+    }
+
     function visualStyleForTodo(todo, isCarryOver) {
       const level = isCarryOver ? "高" : todo.importance;
       const border = importanceColor(level);
@@ -4806,24 +4882,21 @@
         const outside = d.getMonth() !== first.getMonth();
         const today = date === todayString();
         const monthEntries = effectiveTodosForDate(date)
-          .sort((a, b) => {
-            if (a.isCarryOver !== b.isCarryOver) return a.isCarryOver ? -1 : 1;
-            const timeA = a.todo.kind === "event" ? (a.todo.startTime || "") : (a.todo.deadlineTime || "");
-            const timeB = b.todo.kind === "event" ? (b.todo.startTime || "") : (b.todo.deadlineTime || "");
-            const timeCompare = String(timeA || "").localeCompare(String(timeB || ""));
-            if (timeCompare) return timeCompare;
-            return importanceRank(b.todo.importance) - importanceRank(a.todo.importance);
-          });
+          .sort((a, b) => compareMonthEntries(a, b, date));
         const entries = monthEntries.slice(0, 3);
         const allCount = monthEntries.length;
         return `
           <div class="month-cell ${outside ? "outside" : ""} ${today ? "today" : ""}" data-action="select-day" data-date="${escapeHtml(date)}">
             <div class="month-day">${d.getDate()}</div>
-            ${entries.map(entry => `
-              <div class="month-mini task-clickable ${entry.isCarryOver ? "overdue" : ""}" data-action="edit" data-id="${escapeHtml(entry.todo.id)}" style="${monthStyleForEntry(entry)}">
-                <span class="month-mini-inner">${escapeHtml(entry.todo.title)}</span>
-              </div>
-            `).join("")}
+            ${entries.map(entry => {
+              const spanInfo = monthSpanInfoForEntry(entry, date);
+              const titleText = spanInfo.showTitle ? entry.todo.title : " ";
+              return `
+                <div class="month-mini task-clickable ${entry.isCarryOver ? "overdue" : ""} ${spanInfo.className}" data-action="edit" data-id="${escapeHtml(entry.todo.id)}" style="${monthStyleForEntry(entry)}">
+                  <span class="month-mini-inner ${spanInfo.showTitle ? "" : "empty-label"}">${escapeHtml(titleText)}</span>
+                </div>
+              `;
+            }).join("")}
             ${allCount > 3 ? `<div class="month-more">ほか${allCount - 3}件</div>` : ""}
           </div>
         `;
@@ -5886,6 +5959,7 @@
       console.assert(timetableOccurrenceDateForDate("2026-05-07", 1) === "2026-05-04", "Thursday override to Monday should use Monday in the same week");
       console.assert(isEventOnDate({ kind: "event", date: "2026-05-01", endDate: "2026-05-01", repeatMode: "weekly" }, "2026-05-15"), "weekly event should repeat");
       console.assert(!isEventOnDate({ kind: "event", date: "2026-05-01", endDate: "2026-05-01", repeatMode: "weekly", repeatUntil: "2026-05-08" }, "2026-05-15"), "weekly event should stop after repeat end date");
+      console.assert(monthSpanInfoForEntry({ todo: { kind: "event", id: "x", date: "2026-05-01", endDate: "2026-05-03" }, isCarryOver: false }, "2026-05-02").className.includes("middle"), "middle day of multi-day month event should be a connected middle segment");
       console.assert(safeImageSrc("data:image/jpeg;base64,AAAA") !== "", "image data URL should be accepted");
       console.assert(["todo", "calendar"].includes(currentWeekBoardMode()), "week board mode should be valid");
     }
