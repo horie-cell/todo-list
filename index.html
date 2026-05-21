@@ -1375,6 +1375,94 @@
       gap: 10px;
     }
 
+    .override-makeup-grid-wrap {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #f8fafc;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .override-makeup-grid {
+      display: grid;
+      grid-template-columns: 54px repeat(5, minmax(86px, 1fr));
+      min-width: 520px;
+      gap: 0;
+      background: white;
+    }
+
+    .override-makeup-head,
+    .override-makeup-period,
+    .override-makeup-cell {
+      border-right: 1px solid white;
+      border-bottom: 1px solid white;
+      min-height: 42px;
+    }
+
+    .override-makeup-head,
+    .override-makeup-period {
+      background: #ffd400;
+      color: #111827;
+      font-weight: 900;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .override-makeup-period {
+      font-size: 11px;
+      line-height: 1.25;
+      padding: 4px 2px;
+      min-height: 64px;
+    }
+
+    .override-makeup-cell {
+      background: #eef6ff;
+      padding: 3px;
+      min-height: 64px;
+    }
+
+    .override-makeup-class-button {
+      width: 100%;
+      min-height: 58px;
+      border: 0;
+      border-radius: 8px;
+      padding: 5px 4px;
+      background: #bfdbfe;
+      color: #111827;
+      font-weight: 900;
+      line-height: 1.25;
+      text-align: center;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.45);
+    }
+
+    .override-makeup-class-button.selected {
+      outline: 3px solid rgba(15, 23, 42, 0.34);
+      outline-offset: -2px;
+    }
+
+    .override-makeup-class-room {
+      display: inline-block;
+      margin-top: 4px;
+      max-width: 100%;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 5px;
+      padding: 2px 4px;
+      font-size: 10px;
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .override-makeup-selected {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--soft);
+      padding: 8px 10px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
     .override-makeup-list {
       display: grid;
       gap: 8px;
@@ -2856,12 +2944,41 @@
             <p class="desc">通常登録している時間割から授業を選び、この日の日別・週予定カレンダーだけに追加します。</p>
           </div>
 
+          <div>
+            <p class="desc">時間割表から補講にする授業を選択してください。</p>
+            <div id="dayOverrideMakeupTimetable" class="override-makeup-grid-wrap"></div>
+          </div>
+
           <label>
             補講にする授業
             <select id="dayOverrideMakeupClass"></select>
           </label>
 
-          <button id="addDayOverrideMakeup" class="secondary" type="button">選択した授業を補講として追加</button>
+          <div id="dayOverrideMakeupSelected" class="override-makeup-selected">授業を選択してください。</div>
+
+          <div class="two">
+            <label>
+              補講の時限
+              <select id="dayOverrideMakeupPeriod"></select>
+            </label>
+            <label>
+              補講日
+              <input id="dayOverrideMakeupDate" type="date" disabled />
+            </label>
+          </div>
+
+          <div class="two">
+            <label>
+              補講の開始時刻
+              <input id="dayOverrideMakeupStartTime" type="time" />
+            </label>
+            <label>
+              補講の終了時刻
+              <input id="dayOverrideMakeupEndTime" type="time" />
+            </label>
+          </div>
+
+          <button id="addDayOverrideMakeup" class="secondary" type="button">選択した授業をこの時限で補講として追加</button>
 
           <div>
             <p class="desc">この日に追加する補講</p>
@@ -2934,8 +3051,8 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "todo-calendar-board-v84";
-    const OLD_KEYS = ["todo-calendar-board-v83", "todo-calendar-board-v82", "todo-calendar-board-v81", "todo-calendar-board-v80", "todo-calendar-board-v79", "todo-calendar-board-v78", "todo-calendar-board-v77", "todo-calendar-board-v76", "todo-calendar-board-v75", "todo-calendar-board-v74", "todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
+    const STORAGE_KEY = "todo-calendar-board-v85";
+    const OLD_KEYS = ["todo-calendar-board-v84", "todo-calendar-board-v83", "todo-calendar-board-v82", "todo-calendar-board-v81", "todo-calendar-board-v80", "todo-calendar-board-v79", "todo-calendar-board-v78", "todo-calendar-board-v77", "todo-calendar-board-v76", "todo-calendar-board-v75", "todo-calendar-board-v74", "todo-calendar-board-v73", "todo-calendar-board-v72", "todo-calendar-board-v71", "todo-calendar-board-v70", "todo-calendar-board-v69", "todo-calendar-board-v68", "todo-calendar-board-v67", "todo-calendar-board-v66", "todo-calendar-board-v65", "todo-calendar-board-v64", "todo-calendar-board-v63", "todo-calendar-board-v62", "todo-calendar-board-v61", "todo-calendar-board-v60", "todo-calendar-board-v59", "todo-calendar-board-v58", "todo-calendar-board-v57", "todo-calendar-board-v56", "todo-calendar-board-v55", "todo-calendar-board-v54", "todo-calendar-board-v53", "todo-calendar-board-v52", "todo-calendar-board-v51", "todo-calendar-board-v50", "todo-calendar-board-v49", "todo-calendar-board-v48", "todo-calendar-board-v47", "todo-calendar-board-v46", "todo-calendar-board-v45", "todo-calendar-board-v44", "todo-calendar-board-v43", "todo-calendar-board-v42", "todo-calendar-board-v41", "todo-calendar-board-v40", "todo-calendar-board-v39", "todo-calendar-board-v38", "todo-calendar-board-v37", "todo-calendar-board-v36", "todo-calendar-board-v35", "todo-calendar-board-v34", "todo-calendar-board-v33", "todo-calendar-board-v32", "todo-calendar-board-v31", "todo-calendar-board-v30", "todo-calendar-board-v29", "todo-calendar-board-v28", "todo-calendar-board-v27", "todo-calendar-board-v26", "todo-calendar-board-v25", "todo-calendar-board-v24", "todo-calendar-board-v23", "todo-calendar-board-v22", "todo-calendar-board-v21", "todo-calendar-board-v20", "todo-calendar-board-v19", "todo-calendar-board-v18", "todo-calendar-board-v17", "todo-calendar-board-v16", "todo-calendar-board-v15", "todo-calendar-board-v14", "todo-calendar-board-v13", "todo-calendar-board-v12", "todo-calendar-board-v11", "todo-calendar-board-v10", "todo-calendar-board-v9", "todo-calendar-board-v8", "todo-calendar-board-v7", "todo-calendar-board-v6", "todo-calendar-board-v5", "todo-calendar-board-v4", "todo-calendar-board-v3", "todo-calendar-board-v2", "todo-calendar-board-v1"];
 
     const initialState = {
       parents: [
@@ -3212,6 +3329,12 @@
       dayOverrideWeekday: document.getElementById("dayOverrideWeekday"),
       dayOverrideClassList: document.getElementById("dayOverrideClassList"),
       dayOverrideMakeupClass: document.getElementById("dayOverrideMakeupClass"),
+      dayOverrideMakeupTimetable: document.getElementById("dayOverrideMakeupTimetable"),
+      dayOverrideMakeupSelected: document.getElementById("dayOverrideMakeupSelected"),
+      dayOverrideMakeupPeriod: document.getElementById("dayOverrideMakeupPeriod"),
+      dayOverrideMakeupDate: document.getElementById("dayOverrideMakeupDate"),
+      dayOverrideMakeupStartTime: document.getElementById("dayOverrideMakeupStartTime"),
+      dayOverrideMakeupEndTime: document.getElementById("dayOverrideMakeupEndTime"),
       addDayOverrideMakeup: document.getElementById("addDayOverrideMakeup"),
       dayOverrideMakeupList: document.getElementById("dayOverrideMakeupList"),
       saveDayOverride: document.getElementById("saveDayOverride"),
@@ -3433,12 +3556,15 @@
         if (!sourceClassId && (!title || !startTime)) return null;
         const safeStartTime = startTime || "09:00";
         const endTime = /^\d{2}:\d{2}$/.test(String(item?.endTime || "")) ? String(item.endTime) : fallbackEndTime(safeStartTime);
+        const rawPeriod = Number(item?.period);
+        const period = Number.isInteger(rawPeriod) && rawPeriod >= 1 && rawPeriod <= 10 ? rawPeriod : "";
         return {
           id: String(item?.id || makeId("makeup-class")),
           sourceClassId,
           title: title || "補講",
           teacher: String(item?.teacher || "").trim().slice(0, 80),
           room: String(item?.room || "").trim().slice(0, 80),
+          period,
           startTime: safeStartTime,
           endTime,
           colorKey: initialState.classColorPresets.some(preset => preset.id === item?.colorKey) ? item.colorKey : "yellow"
@@ -3446,16 +3572,20 @@
       }).filter(Boolean);
     }
 
-    function classSnapshotForMakeup(sourceClass) {
+    function classSnapshotForMakeup(sourceClass, periodOverride = null, startOverride = "", endOverride = "") {
       if (!sourceClass) return null;
-      const [fallbackStart, fallbackEnd] = defaultPeriodTimes(sourceClass.period);
-      const startTime = sourceClass.startTime || fallbackStart || "09:00";
-      const endTime = sourceClass.endTime || fallbackEnd || fallbackEndTime(startTime);
+      const rawPeriod = Number(periodOverride ?? sourceClass.period);
+      const period = Number.isInteger(rawPeriod) && rawPeriod >= 1 && rawPeriod <= 10 ? rawPeriod : Number(sourceClass.period || 1);
+      const [fallbackStart, fallbackEnd] = defaultPeriodTimes(period);
+      const sourceFallback = defaultPeriodTimes(sourceClass.period);
+      const startTime = /^\d{2}:\d{2}$/.test(startOverride) ? startOverride : (fallbackStart || sourceClass.startTime || sourceFallback[0] || "09:00");
+      const endTime = /^\d{2}:\d{2}$/.test(endOverride) ? endOverride : (fallbackEnd || sourceClass.endTime || sourceFallback[1] || fallbackEndTime(startTime));
       return {
         sourceClassId: String(sourceClass.id || ""),
         title: String(sourceClass.title || "授業").trim() || "授業",
         teacher: String(sourceClass.teacher || "").trim(),
         room: String(sourceClass.room || "").trim(),
+        period,
         startTime,
         endTime,
         colorKey: sourceClass.colorKey || "blue"
@@ -3465,11 +3595,17 @@
     function resolveMakeupExtraClass(item) {
       const source = item.sourceClassId ? state.classes.find(classItem => classItem.id === item.sourceClassId) : null;
       const snapshot = source ? classSnapshotForMakeup(source) : null;
+      if (!snapshot) return item;
       return {
         ...item,
-        ...(snapshot || {}),
-        id: item.id,
-        sourceClassId: item.sourceClassId || snapshot?.sourceClassId || ""
+        title: snapshot.title,
+        teacher: snapshot.teacher,
+        room: snapshot.room,
+        colorKey: snapshot.colorKey,
+        sourceClassId: item.sourceClassId || snapshot.sourceClassId || "",
+        period: item.period || snapshot.period,
+        startTime: item.startTime || snapshot.startTime,
+        endTime: item.endTime || snapshot.endTime
       };
     }
 
@@ -3553,17 +3689,20 @@
             }))
         : [];
 
-      const extraClasses = normalizeDayOverrideExtraClasses(override.extraClasses).map(item => ({
-        ...resolveMakeupExtraClass(item),
-        date,
-        occurrenceDate: date,
-        kind: "class",
-        isMakeupClass: true,
-        day: weekdayIndex(date),
-        period: "補講",
-        startDate: date,
-        repeatMode: "makeup"
-      }));
+      const extraClasses = normalizeDayOverrideExtraClasses(override.extraClasses).map(item => {
+        const resolved = resolveMakeupExtraClass(item);
+        return {
+          ...resolved,
+          date,
+          occurrenceDate: date,
+          kind: "class",
+          isMakeupClass: true,
+          day: weekdayIndex(date),
+          period: resolved.period || "補講",
+          startDate: date,
+          repeatMode: "makeup"
+        };
+      });
 
       return [...regularClasses, ...extraClasses]
         .sort((a, b) => String(a.startTime || "").localeCompare(String(b.startTime || "")));
@@ -4919,8 +5058,83 @@
       return `${weekdayNameFromIndex(Number(classItem.day))}曜${classItem.period}限 ${title}（${startTime}〜${endTime}${classItem.room ? "・" + classItem.room : ""}）`;
     }
 
+    function renderDayOverrideMakeupPeriodSelect() {
+      if (!els.dayOverrideMakeupPeriod) return;
+      const current = Number(els.dayOverrideMakeupPeriod.value || 1);
+      els.dayOverrideMakeupPeriod.innerHTML = Array.from({ length: state.timetableSettings.periodCount }, (_, index) => {
+        const period = index + 1;
+        return `<option value="${period}">${period}限</option>`;
+      }).join("");
+      els.dayOverrideMakeupPeriod.value = String(Math.min(Math.max(current, 1), state.timetableSettings.periodCount));
+    }
+
+    function renderDayOverrideMakeupTimetableGrid(selectedId = els.dayOverrideMakeupClass?.value || "") {
+      if (!els.dayOverrideMakeupTimetable) return;
+      const days = [1, 2, 3, 4, 5];
+      const periods = Array.from({ length: state.timetableSettings.periodCount }, (_, index) => index + 1);
+      const heads = ["時限", "月", "火", "水", "木", "金"]
+        .map(text => `<div class="override-makeup-head">${escapeHtml(text)}</div>`)
+        .join("");
+      const rows = periods.map(period => {
+        const [start, end] = defaultPeriodTimes(period);
+        const time = `<div class="override-makeup-period">${period}限<br>${escapeHtml(start || "--:--")}<br>〜<br>${escapeHtml(end || "--:--")}</div>`;
+        const cells = days.map(day => {
+          const item = classForSlot(day, period);
+          if (!item) return `<div class="override-makeup-cell"></div>`;
+          return `
+            <div class="override-makeup-cell">
+              <button type="button" class="override-makeup-class-button ${item.id === selectedId ? "selected" : ""}" data-makeup-class-pick="${escapeHtml(item.id)}" style="background:${classPresetColor(item.colorKey)}">
+                <span>${escapeHtml(item.title || "授業")}</span>
+                ${item.room ? `<span class="override-makeup-class-room">${escapeHtml(item.room)}</span>` : ""}
+              </button>
+            </div>
+          `;
+        }).join("");
+        return time + cells;
+      }).join("");
+      els.dayOverrideMakeupTimetable.innerHTML = `<div class="override-makeup-grid">${heads}${rows}</div>`;
+    }
+
+    function updateDayOverrideMakeupSelectionSummary() {
+      if (!els.dayOverrideMakeupSelected) return;
+      const sourceClass = state.classes.find(item => item.id === els.dayOverrideMakeupClass.value);
+      if (!sourceClass) {
+        els.dayOverrideMakeupSelected.textContent = "授業を選択してください。";
+        return;
+      }
+      const period = Number(els.dayOverrideMakeupPeriod.value || sourceClass.period || 1);
+      const start = els.dayOverrideMakeupStartTime.value || defaultPeriodTimes(period)[0] || "--:--";
+      const end = els.dayOverrideMakeupEndTime.value || defaultPeriodTimes(period)[1] || "--:--";
+      els.dayOverrideMakeupSelected.textContent = `選択中：${weekdayNameFromIndex(Number(sourceClass.day))}曜${sourceClass.period}限 ${sourceClass.title || "授業"} → 補講 ${period}限（${start}〜${end}）`;
+    }
+
+    function syncDayOverrideMakeupTimesFromPeriod() {
+      const period = Number(els.dayOverrideMakeupPeriod.value || 1);
+      const [start, end] = defaultPeriodTimes(period);
+      els.dayOverrideMakeupStartTime.value = start || "";
+      els.dayOverrideMakeupEndTime.value = end || "";
+      updateDayOverrideMakeupSelectionSummary();
+    }
+
+    function selectDayOverrideMakeupClass(classId, syncPeriod = true) {
+      const sourceClass = state.classes.find(item => item.id === classId);
+      if (!sourceClass) return;
+      els.dayOverrideMakeupClass.value = sourceClass.id;
+      if (syncPeriod) {
+        const period = Math.min(Number(sourceClass.period || 1), state.timetableSettings.periodCount);
+        const [defaultStart, defaultEnd] = defaultPeriodTimes(period);
+        els.dayOverrideMakeupPeriod.value = String(period);
+        els.dayOverrideMakeupStartTime.value = sourceClass.startTime || defaultStart || "";
+        els.dayOverrideMakeupEndTime.value = sourceClass.endTime || defaultEnd || "";
+      }
+      renderDayOverrideMakeupTimetableGrid(sourceClass.id);
+      updateDayOverrideMakeupSelectionSummary();
+    }
+
     function renderDayOverrideMakeupClassSelect() {
       if (!els.dayOverrideMakeupClass) return;
+      renderDayOverrideMakeupPeriodSelect();
+      if (els.dayOverrideMakeupDate) els.dayOverrideMakeupDate.value = state.selectedDate;
       const classItems = [...state.classes].sort((a, b) => {
         const dayDiff = Number(a.day || 0) - Number(b.day || 0);
         if (dayDiff) return dayDiff;
@@ -4931,14 +5145,26 @@
       if (!classItems.length) {
         els.dayOverrideMakeupClass.innerHTML = `<option value="">時間割に登録済みの授業がありません</option>`;
         els.dayOverrideMakeupClass.disabled = true;
+        els.dayOverrideMakeupPeriod.disabled = true;
+        els.dayOverrideMakeupStartTime.disabled = true;
+        els.dayOverrideMakeupEndTime.disabled = true;
         els.addDayOverrideMakeup.disabled = true;
+        if (els.dayOverrideMakeupTimetable) els.dayOverrideMakeupTimetable.innerHTML = `<div class="empty" style="margin:0; border:0;">時間割に登録済みの授業がありません。</div>`;
+        updateDayOverrideMakeupSelectionSummary();
         return;
       }
       els.dayOverrideMakeupClass.disabled = false;
+      els.dayOverrideMakeupPeriod.disabled = false;
+      els.dayOverrideMakeupStartTime.disabled = false;
+      els.dayOverrideMakeupEndTime.disabled = false;
       els.addDayOverrideMakeup.disabled = false;
       els.dayOverrideMakeupClass.innerHTML = classItems.map(item =>
         `<option value="${escapeHtml(item.id)}">${escapeHtml(timetableClassOptionLabel(item))}</option>`
       ).join("");
+      const selectedClassId = classItems.some(item => item.id === els.dayOverrideMakeupClass.value)
+        ? els.dayOverrideMakeupClass.value
+        : classItems[0].id;
+      selectDayOverrideMakeupClass(selectedClassId, true);
     }
 
     function renderDayOverrideMakeupList() {
@@ -4952,11 +5178,12 @@
       els.dayOverrideMakeupList.innerHTML = extras.map(item => {
         const resolved = resolveMakeupExtraClass(item);
         const sourceLabel = resolved.sourceClassId ? "通常時間割から追加" : "手入力データ";
+        const periodLabel = resolved.period ? `${resolved.period}限・` : "";
         return `
           <div class="override-makeup-item">
             <div>
               <div class="override-makeup-title">${escapeHtml(resolved.title)}</div>
-              <div class="override-makeup-meta">${escapeHtml(resolved.startTime)}〜${escapeHtml(resolved.endTime)}${resolved.room ? "・" + escapeHtml(resolved.room) : ""}${resolved.teacher ? "・" + escapeHtml(resolved.teacher) : ""}・${escapeHtml(sourceLabel)}</div>
+              <div class="override-makeup-meta">${escapeHtml(periodLabel)}${escapeHtml(resolved.startTime)}〜${escapeHtml(resolved.endTime)}${resolved.room ? "・" + escapeHtml(resolved.room) : ""}${resolved.teacher ? "・" + escapeHtml(resolved.teacher) : ""}・${escapeHtml(sourceLabel)}</div>
             </div>
             <button class="override-makeup-delete" type="button" data-makeup-delete="${escapeHtml(resolved.id)}">削除</button>
           </div>
@@ -4967,9 +5194,16 @@
     function addDayOverrideMakeup() {
       const classId = els.dayOverrideMakeupClass.value;
       const sourceClass = state.classes.find(item => item.id === classId);
-      const snapshot = classSnapshotForMakeup(sourceClass);
+      const period = Number(els.dayOverrideMakeupPeriod.value || sourceClass?.period || 1);
+      const startTime = els.dayOverrideMakeupStartTime.value;
+      const endTime = els.dayOverrideMakeupEndTime.value;
+      const snapshot = classSnapshotForMakeup(sourceClass, period, startTime, endTime);
       if (!snapshot) {
         alert("補講にする授業を選択してください。");
+        return;
+      }
+      if (!snapshot.startTime || !snapshot.endTime) {
+        alert("補講の開始時刻と終了時刻を入力してください。");
         return;
       }
       dayOverrideDraftExtraClasses.push({
@@ -6432,6 +6666,15 @@
     els.saveDayOverride.addEventListener("click", saveDayOverride);
     els.resetDayOverride.addEventListener("click", resetDayOverride);
     els.dayOverrideWeekday.addEventListener("change", renderDayOverrideClassList);
+    els.dayOverrideMakeupClass.addEventListener("change", () => selectDayOverrideMakeupClass(els.dayOverrideMakeupClass.value, true));
+    els.dayOverrideMakeupPeriod.addEventListener("change", syncDayOverrideMakeupTimesFromPeriod);
+    els.dayOverrideMakeupStartTime.addEventListener("input", updateDayOverrideMakeupSelectionSummary);
+    els.dayOverrideMakeupEndTime.addEventListener("input", updateDayOverrideMakeupSelectionSummary);
+    els.dayOverrideMakeupTimetable.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-makeup-class-pick]");
+      if (!button) return;
+      selectDayOverrideMakeupClass(button.dataset.makeupClassPick, true);
+    });
     els.addDayOverrideMakeup.addEventListener("click", addDayOverrideMakeup);
     els.dayOverrideMakeupList.addEventListener("click", (event) => {
       const button = event.target.closest("[data-makeup-delete]");
